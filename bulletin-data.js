@@ -47,7 +47,7 @@ window.SS_BULLETIN = {
       date: "2026-09-12",
       time: "6:00 PM",
       title: "September Worship Night",
-      location: "Buffalo Community Church · 4445 Hoffa Mill Rd, Lewisburg, PA 17837",
+      location: "Bridges Alliance Church · 102 Alliance Way, Selinsgrove, PA 17870",
       theme: "An evening of worship, prayer, and the Word",
       details: "",
       rsvp: ""
@@ -56,7 +56,7 @@ window.SS_BULLETIN = {
       date: "2026-10-10",
       time: "6:00 PM",
       title: "October Worship Night",
-      location: "Location announced soon",
+      location: "Christian Gospel Fellowship · 2938 State Route 42, Millville, PA 17846",
       theme: "An evening of worship, prayer, and the Word",
       details: "",
       rsvp: ""
