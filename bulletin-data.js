@@ -20,7 +20,7 @@ window.SS_BULLETIN = {
 
   /* Optional banner shown at the top of the "This Month" section.
      Leave as "" to hide it. */
-  announcement: "Mark your calendar — a worship night every month. Check the dates below.",
+  announcement: "No Second Saturday in December or January. November 14 in Bloomsburg is our last night of the year.",
 
   /* The list of worship nights. Add, remove, or edit freely.
      The one with the soonest future date becomes the featured card. */
@@ -65,18 +65,9 @@ window.SS_BULLETIN = {
       date: "2026-11-14",
       time: "6:00 PM",
       title: "November Worship Night",
-      location: "Location announced soon",
+      location: "Shiloh Bible Church · 123 Church St, Bloomsburg, PA 17815",
       theme: "An evening of worship, prayer, and the Word",
-      details: "",
-      rsvp: ""
-    },
-    {
-      date: "2026-12-12",
-      time: "6:00 PM",
-      title: "December Worship Night",
-      location: "Location announced soon",
-      theme: "An evening of worship, prayer, and the Word",
-      details: "",
+      details: "Our last Second Saturday of the year. There will be no meeting in December or January.",
       rsvp: ""
     }
   ],
@@ -84,6 +75,7 @@ window.SS_BULLETIN = {
   /* Optional free-form notes / announcements shown on the bulletin board.
      Add or remove lines. Leave the list empty [] to hide the board. */
   notes: [
+    "No meeting in December or January. We'll see you in the new year.",
     "Fellowship before and after every night.",
     "Want to host Second Saturday at your church? Reach out — we'd love to talk.",
     "Follow along and invite a friend — anyone can invite anyone."
