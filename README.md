@@ -86,7 +86,7 @@ gh auth login          # device-code: visit github.com/login/device, enter the c
 gh repo create secondsaturday --public --source=. --remote=origin --push
 ```
 
-### 2. Deploy on Cloudflare Pages → `secondsaturday.pages.dev`
+### 2. Deploy on Cloudflare Pages → `secondsaturdayworship.com`
 > ⚠️ **Use Pages, NOT Workers.** Cloudflare nudges you toward “Workers” (it
 > mentions *wrangler deploy* and gives an ugly URL). The correct **Pages**
 > screen asks for **“Framework preset”** and **“Build output directory.”**
@@ -99,7 +99,7 @@ gh repo create secondsaturday --public --source=. --remote=origin --push
    - **Framework preset:** `None`
    - **Build command:** *(leave empty)*
    - **Build output directory:** `/`
-4. **Save and Deploy** → live at **`secondsaturday.pages.dev`** in ~60 seconds.
+4. **Save and Deploy** → live at **`secondsaturdayworship.com`** in ~60 seconds.
 
 After that, every change you push to GitHub goes live automatically.
 
