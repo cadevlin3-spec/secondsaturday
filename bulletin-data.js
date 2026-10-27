@@ -20,7 +20,7 @@ window.SS_BULLETIN = {
 
   /* Optional banner shown at the top of the "This Month" section.
      Leave as "" to hide it. */
-  announcement: "No Second Saturday in December or January. November 14 in Bloomsburg is our last night of the year.",
+  announcement: "No Second Saturday in December or January. November 14 in Bloomsburg is our last night of the year. See you in the new year!",
 
   /* The list of worship nights. Add, remove, or edit freely.
      The one with the soonest future date becomes the featured card. */
@@ -31,7 +31,7 @@ window.SS_BULLETIN = {
       title: "July Worship Night",
       location: "Lycoming Valley Baptist Church · 4980 Lycoming Mall Dr, Montoursville, PA 17754",
       theme: "An evening of worship, prayer, and the Word",
-      details: "Doors open 30 minutes early for fellowship. Bring a friend — everyone is welcome, no matter where you are on your journey of faith.",
+      details: "Doors open 30 minutes early. Bring a friend. Everyone is welcome.",
       rsvp: ""                      // optional link, e.g. "https://..."  (leave "" for none)
     },
     {
@@ -67,7 +67,7 @@ window.SS_BULLETIN = {
       title: "November Worship Night",
       location: "Shiloh Bible Church · 123 Church St, Bloomsburg, PA 17815",
       theme: "An evening of worship, prayer, and the Word",
-      details: "Our last Second Saturday of the year. There will be no meeting in December or January.",
+      details: "Our last night of the year.",
       rsvp: ""
     }
   ],
@@ -75,9 +75,8 @@ window.SS_BULLETIN = {
   /* Optional free-form notes / announcements shown on the bulletin board.
      Add or remove lines. Leave the list empty [] to hide the board. */
   notes: [
-    "No meeting in December or January. We'll see you in the new year.",
-    "Fellowship before and after every night.",
-    "Want to host Second Saturday at your church? Reach out — we'd love to talk.",
-    "Follow along and invite a friend — anyone can invite anyone."
+    "Come early and stay after to meet people from other churches.",
+    "Want to host a night at your church? Get in touch.",
+    "Bring a friend. Everyone is welcome."
   ]
 };

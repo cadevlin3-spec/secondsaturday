@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>This Month | Second Saturday</title>
+<meta name="description" content="Where and when the next Second Saturday worship night is. A different church hosts each month.">
+<meta name="theme-color" content="#070605">
+<link rel="canonical" href="https://secondsaturdayworship.com/this-month/">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Second Saturday">
+<meta property="og:title" content="This Month | Second Saturday">
+<meta property="og:description" content="Where and when the next Second Saturday worship night is. A different church hosts each month.">
+<meta property="og:url" content="https://secondsaturdayworship.com/this-month/">
+<meta property="og:image" content="https://secondsaturdayworship.com/img/og.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,500..900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/assets/site.css?v=3">
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+
+<header class="nav">
+  <div class="nav-in">
+    <a class="brand" href="/" aria-label="Second Saturday home">
+      <img src="/favicon.svg" width="30" height="30" alt="" style="border-radius:8px">
+      <span>Second Saturday</span>
+    </a>
+    <button class="menu-btn" id="menuBtn" aria-label="Open menu" aria-expanded="false" aria-controls="navLinks">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+    </button>
+    <nav class="links" id="navLinks" aria-label="Main">
+      <a href="/this-month/" aria-current="page">This Month</a>
+      <a href="/about/">About</a>
+      <a href="/gallery/">Gallery</a>
+      <a href="/beliefs/">Beliefs</a>
+      <a href="/get-involved/" class="cta">Get involved</a>
+    </nav>
+  </div>
+</header>
+
+<main id="main">
+<section class="page-hero">
+  <div class="bg" aria-hidden="true"><img src="/img/pavilion-dusk-lights.jpg" alt=""></div>
+  <div class="wrap">
+    <p class="eyebrow">This month</p>
+    <h1>Worship nights</h1>
+    <p class="lead">Where and when we meet next. A different church hosts each month.</p>
+  </div>
+</section>
+
+<section class="band">
+  <div class="wrap">
+    <div class="announce" id="announce" hidden>
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 11l18-5v12L3 14v-3z"/><path d="M11.6 16.8a3 3 0 1 1-5.8-1.6"/></svg>
+      <span id="announceText"></span>
+    </div>
+    <div class="month-grid">
+      <article class="next" id="featureCard" aria-live="polite">
+        <div class="next-bg" aria-hidden="true"><img src="/img/string-lights-band.jpg" alt=""></div>
+        <div class="next-in"><p class="eyebrow">Loading the next night…</p></div>
+      </article>
+      <div class="side">
+        <div class="panel" id="upcomingBox" hidden>
+          <h3>Coming up</h3>
+          <div id="upcomingList"></div>
+        </div>
+        <div class="panel" id="boardBox" hidden>
+          <h3>Good to know</h3>
+          <ul id="boardList"></ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <a class="brand" href="/"><img src="/favicon.svg" width="30" height="30" alt="" style="border-radius:8px"><span>Second Saturday</span></a>
+    <p class="tag">One night a month. The whole Church, together.</p>
+    <nav class="flinks" aria-label="Footer">
+      <a href="/this-month/">This Month</a><a href="/about/">About</a><a href="/gallery/">Gallery</a><a href="/beliefs/">Beliefs</a><a href="/get-involved/">Get Involved</a>
+    </nav>
+    <p class="team">Second Saturday is run by volunteers and worship leaders from local churches across Central PA.</p>
+    <p class="copy">© <span id="year"></span> Second Saturday · Central Pennsylvania · secondsaturdayworship.com</p>
+  </div>
+</footer>
+
+<script src="/bulletin-data.js"></script>
+<script src="/assets/site.js?v=3"></script>
+</body>
+</html>

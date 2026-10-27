@@ -10,6 +10,20 @@ portable, and free to host.
 
 | File / folder        | What it is |
 |----------------------|------------|
+| `index.html`         | Home page: video, next night, short previews of each page. |
+| `this-month/`        | This Month page: next night, upcoming dates, notes. |
+| `about/`             | About page: who we are, what to expect, values, vision. |
+| `gallery/`           | All photos, with a full-screen viewer. |
+| `beliefs/`           | Apostles' Creed and core beliefs. |
+| `get-involved/`      | Contact details and the contact form. |
+| `assets/site.css`, `assets/site.js` | Shared look and behavior for every page. |
+| `bulletin-data.js`   | **The one file you edit each month** (dates, locations, notes). |
+| `img/`, `video/`     | Web-sized photos and the home page video. |
+| `functions/_middleware.js` | Sends www and the old pages.dev address to secondsaturdayworship.com. |
+
+To add a photo to the gallery, put it in `img/` and copy one `<a href=...><img ...></a>` line in `gallery/index.html`.
+
+----------------------|------------|
 | `index.html`         | The entire website. |
 | `bulletin-data.js`   | **The one file you edit each month** — the worship-night dates & notes. |
 | `img/`               | Web-optimized photos used on the site. |
