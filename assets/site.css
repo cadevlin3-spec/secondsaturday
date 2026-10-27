@@ -57,6 +57,7 @@ body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset
 @media (max-width:860px){.links a[aria-current="page"]:not(.cta){box-shadow:none;color:var(--ember)}}
 .links .cta{background:var(--fg);color:#0b0907;font-weight:600;padding:8px 15px;border-radius:999px}
 .links .cta:hover{color:#0b0907;background:#fff}
+.links .cta[aria-current="page"]{color:#0b0907}
 .menu-btn{display:none;background:none;border:0;color:var(--fg);padding:8px;cursor:pointer}
 @media (max-width:860px){
   .menu-btn{display:block}
