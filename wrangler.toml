@@ -8,3 +8,8 @@ compatibility_date = "2026-10-01"
 binding = "DB"
 database_name = "second-saturday-planner"
 database_id = "5826cf3f-6664-48ff-a7a8-c65591644801"
+
+# Files the admins attach to songs (MP3s, charts, etc.). Up to 25 MB each.
+[[kv_namespaces]]
+binding = "FILES"
+id = "22804b719a21407387967a5c9b4dbaed"

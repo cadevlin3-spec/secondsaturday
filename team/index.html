@@ -158,7 +158,7 @@ tbody tr.click:hover{background:var(--sunk)}
 
 /* dialog */
 dialog{border:1px solid var(--line);border-radius:18px;padding:0;background:var(--surface);color:var(--ink);width:min(520px,calc(100vw - 32px));max-height:calc(100dvh - 48px)}
-.sheet{width:min(440px,calc(100vw - 32px))}
+.sheet{width:min(440px,calc(100vw - 32px));max-height:calc(100dvh - 32px);overflow:auto}
 .sheet .sh{display:grid;gap:14px;padding:22px 20px 18px;justify-items:center;text-align:center}
 .sheet h2{font-size:22px}
 .sheet .sub{color:var(--muted);font-size:14px;margin-top:-8px}
@@ -170,6 +170,20 @@ dialog{border:1px solid var(--line);border-radius:18px;padding:0;background:var(
 .sheet .opt small{display:block;font-weight:500;font-size:13px;color:var(--muted);margin-top:2px}
 .sheet .opt.off{opacity:.5}
 .sheet .note{font-size:14px;color:var(--muted);white-space:pre-wrap}
+.sheet .files{display:grid;gap:10px;width:100%;text-align:left}
+.sheet .files h3{font:700 11px var(--f-body);letter-spacing:.16em;text-transform:uppercase;color:var(--accent);margin:4px 0 0}
+.sheet .file{display:grid;gap:8px;border:1px solid var(--line);border-radius:14px;padding:12px 14px}
+.sheet .file .top{display:flex;align-items:center;gap:10px}
+.sheet .file .nm{font-weight:600;font-size:15px;min-width:0;overflow-wrap:anywhere;margin-right:auto}
+.sheet .file .meta{font-size:12px;color:var(--muted);white-space:nowrap}
+.sheet .file audio{width:100%;height:40px}
+.sheet .file a.ext{font-size:14px}
+.sheet .del{border:0;background:transparent;color:var(--muted);font:600 13px var(--f-body);cursor:pointer;padding:2px 4px}
+.sheet .del:hover,.sheet .del.armed{color:var(--bad)}
+.sheet .up{display:grid;gap:6px;justify-items:center;border:1.5px dashed var(--line);border-radius:14px;padding:14px;color:var(--muted);font-size:13px;text-align:center}
+.sheet .up.drag{border-color:var(--accent);background:#fff6ef}
+.sheet .up .prog{font-weight:600;color:var(--ink)}
+.filechip{display:inline-block;margin-left:6px;font:700 11px var(--f-body);letter-spacing:.04em;color:var(--accent);background:#fff1e6;border-radius:999px;padding:1px 7px;vertical-align:1px}
 .sheet .row{display:flex;gap:8px;width:100%;justify-content:center;margin-top:4px}
 dialog::backdrop{background:rgba(27,23,20,.35)}
 dialog form{display:grid;gap:0}
@@ -335,7 +349,7 @@ function panelSet(s){
   if(!list.length)return h+`<div class="pempty">No songs picked yet. Add from the team's song library, with the key for this night.</div></section>`;
   h+=`<ol class="rows set">`+list.map((e,i)=>{const so=songById(e.songId)||{title:e.title||"Removed song"};return`<li class="click" data-act="song-sheet" data-i="${i}">
     <span class="n">${i+1}</span>
-    <div class="what"><b>${esc(so.title)}</b><span>${esc([so.artist,so.bpm?so.bpm+" bpm":"",e.notes].filter(Boolean).join(" · "))}</span></div>
+    <div class="what"><b>${esc(so.title)}${fileChip(so)}</b><span>${esc([so.artist,so.bpm?so.bpm+" bpm":"",e.notes].filter(Boolean).join(" · "))}</span></div>
     <div class="mv">${(e.key||so.defaultKey)?`<span class="key">${esc(e.key||so.defaultKey)}</span>`:""}<span class="w"><button type="button" aria-label="Move up" data-act="set-mv" data-i="${i}" data-d="-1">↑</button><button type="button" aria-label="Move down" data-act="set-mv" data-i="${i}" data-d="1">↓</button></span></div></li>`}).join("")+`</ol></section>`;
   return h;
 }
@@ -360,7 +374,7 @@ function viewSongs(){
   if(!S.loaded.songs&&!S.noDb)return h+`<p class="muted">Loading songs…</p>`;
   if(!S.songs.length)return h+`<div class="empty"><strong>The song library is empty</strong><span>Add the songs the team plays, with their usual key, tempo and a link to the chart.</span><button type="button" class="btn primary w" data-act="song-add">Add the first song</button></div>`;
   h+=`<div class="tbl"><table><thead><tr><th>Song</th><th>Key</th><th class="hide-sm">BPM</th><th>Last played</th><th class="hide-sm">Links</th></tr></thead><tbody>`+
-  list.map(s=>{const lu=songLastUsed(s.id);return`<tr class="click" data-act="song-sheet" data-id="${esc(s.id)}"><td><b>${esc(s.title)}</b>${s.artist?`<div class="muted" style="font-size:13px">${esc(s.artist)}</div>`:""}</td><td>${s.defaultKey?`<span class="key">${esc(s.defaultKey)}</span>`:""}</td><td class="mono hide-sm">${esc(s.bpm||"")}</td><td class="muted">${lu?esc(fmtShort(lu)):"Not yet"}</td><td class="hide-sm"><span class="links">${s.link?`<a class="ext" href="${esc(s.link)}" target="_blank" rel="noopener">YouTube ↗</a>`:""}${s.chart?`<a class="ext" href="${esc(s.chart)}" target="_blank" rel="noopener">Chart ↗</a>`:""}</span></td></tr>`}).join("")+`</tbody></table></div>`;
+  list.map(s=>{const lu=songLastUsed(s.id);return`<tr class="click" data-act="song-sheet" data-id="${esc(s.id)}"><td><b>${esc(s.title)}</b>${fileChip(s)}${s.artist?`<div class="muted" style="font-size:13px">${esc(s.artist)}</div>`:""}</td><td>${s.defaultKey?`<span class="key">${esc(s.defaultKey)}</span>`:""}</td><td class="mono hide-sm">${esc(s.bpm||"")}</td><td class="muted">${lu?esc(fmtShort(lu)):"Not yet"}</td><td class="hide-sm"><span class="links">${s.link?`<a class="ext" href="${esc(s.link)}" target="_blank" rel="noopener">YouTube ↗</a>`:""}${s.chart?`<a class="ext" href="${esc(s.chart)}" target="_blank" rel="noopener">Chart ↗</a>`:""}</span></td></tr>`}).join("")+`</tbody></table></div>`;
   if(!list.length)h+=`<p class="muted">No songs match “${esc(S.q)}”.</p>`;
   return h;
 }
@@ -469,7 +483,7 @@ function dlgSong(id){
     ${fIn("link","YouTube link",so.link,'type="url" placeholder="https://"')}
     ${fIn("chart","Chord chart link",so.chart,'type="url" placeholder="https://"')}
     ${fArea("notes","Notes",so.notes)}`,
-    onSave:async fd=>{const d={};["title","artist","defaultKey","bpm","link","chart","notes"].forEach(k=>d[k]=String(fd.get(k)||"").trim());["link","chart"].forEach(k=>{if(d[k]&&!/^https?:\/\//i.test(d[k]))d[k]="https://"+d[k]});return write("songs",sid,d)},
+    onSave:async fd=>{const d={};["title","artist","defaultKey","bpm","link","chart","notes"].forEach(k=>d[k]=String(fd.get(k)||"").trim());["link","chart"].forEach(k=>{if(d[k]&&!/^https?:\/\//i.test(d[k]))d[k]="https://"+d[k]});const prev=songById(sid);if(prev&&prev.files)d.files=prev.files;return write("songs",sid,d)},
     onDelete:isNew?null:async()=>remove("songs",sid),delLabel:"Delete song"});
 }
 function dlgPerson(id){
@@ -487,6 +501,48 @@ function dlgPerson(id){
 const sheet=document.getElementById("sheet"),sheetBody=document.getElementById("sheetBody");
 const ICON_CHART='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 13h6M9 17h4"/></svg>';
 const ICON_VIDEO='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="3"/><path d="M10 9.5v5l4.5-2.5z" fill="currentColor"/></svg>';
+const FILE_ACCEPT=".mp3,.m4a,.aac,.wav,.ogg,.flac,.aif,.aiff,.pdf,.png,.jpg,.jpeg,.gif,.webp,.heic,.doc,.docx,.txt,.rtf,.cho,.chopro,.pro,.onsong,audio/*,application/pdf,image/*";
+const MAX_FILE=25*1024*1024;
+const isAudio=f=>/^audio\//.test(f.type||"");
+const fmtSize=n=>n>=1048576?(n/1048576).toFixed(1)+" MB":Math.max(1,Math.round(n/1024))+" KB";
+function fileChip(so){const f=so.files||[];if(!f.length)return"";const a=f.filter(isAudio).length;return `<span class="filechip">${a?(a>1?a+" audio":"Audio"):(f.length+(f.length>1?" files":" file"))}</span>`}
+function filesHtml(so){
+  const f=so.files||[];
+  let h=`<div class="files">`;
+  if(f.length||S.canWrite)h+=`<h3>Files</h3>`;
+  h+=f.map(x=>`<div class="file"><div class="top"><span class="nm">${esc(x.label||x.name)}</span><span class="meta">${esc((x.name.split(".").pop()||"").toUpperCase())} · ${fmtSize(x.size||0)}</span>${S.canWrite?`<button type="button" class="del" data-fdel="${esc(x.id)}" aria-label="Remove ${esc(x.label||x.name)}">Remove</button>`:""}</div>
+    ${isAudio(x)?`<audio controls preload="none" src="${API}/files/${esc(x.id)}"></audio>`:`<a class="ext" href="${API}/files/${esc(x.id)}" target="_blank" rel="noopener">Open ↗</a>`}</div>`).join("");
+  if(S.canWrite)h+=`<label class="up" id="upZone"><input type="file" id="upInput" multiple accept="${FILE_ACCEPT}" hidden><span class="btn small">Upload files</span><span>MP3, M4A, WAV or other audio, PDF charts, images, Word or text. Up to 25 MB each.</span><span class="prog" id="upProg" hidden></span></label>`;
+  return h+`</div>`;
+}
+function uploadOne(file,onProgress){
+  return new Promise((resolve,reject)=>{
+    const x=new XMLHttpRequest();
+    x.open("POST",API+"/files?name="+encodeURIComponent(file.name));
+    x.upload.onprogress=e=>{if(e.lengthComputable)onProgress(e.loaded/e.total)};
+    x.onload=()=>{let d={};try{d=JSON.parse(x.responseText)}catch(e){};x.status===200?resolve(d):reject(new Error(d.error||"Upload failed ("+x.status+")"))};
+    x.onerror=()=>reject(new Error("Upload failed. Check your connection."));
+    x.send(file);
+  });
+}
+async function uploadFiles(songId,idx,list){
+  const prog=document.getElementById("upProg");const show=t=>{if(prog){prog.hidden=false;prog.textContent=t}};
+  const added=[];
+  for(const [n,file] of [...list].entries()){
+    if(file.size>MAX_FILE){toast(file.name+" is over 25 MB.");continue}
+    try{
+      const d=await uploadOne(file,p=>show(`Uploading ${n+1} of ${list.length}: ${Math.round(p*100)}%`));
+      added.push({id:d.id,name:d.name,type:d.type,size:d.size,label:file.name.replace(/\.[^.]+$/,""),at:Date.now()});
+    }catch(e){toast(e.message)}
+  }
+  if(!added.length){if(prog)prog.hidden=true;return}
+  const so=clone(songById(songId));so.files=[...(so.files||[]),...added];delete so.id;
+  if(await write("songs",songId,so)){toast(added.length>1?added.length+" files added":"File added");openSheet(songId,idx)}
+}
+async function removeFile(songId,idx,fid){
+  const so=clone(songById(songId));so.files=(so.files||[]).filter(f=>f.id!==fid);delete so.id;
+  if(await write("songs",songId,so)){try{await api("DELETE","/files/"+fid)}catch(e){};toast("File removed");openSheet(songId,idx)}
+}
 function openSheet(songId,idx){
   const so=songById(songId);if(!so)return;
   const e=idx!=null&&S.open?((S.services.find(x=>x.id===S.open)||{}).setlist||[])[idx]:null;
@@ -499,14 +555,24 @@ function openSheet(songId,idx){
     ${key?`<span class="bigkey">Key of ${esc(key)}</span>`:""}
     <div class="opts">${opt(so.chart,ICON_CHART,"Chord chart",key?"Use the key of "+esc(key):"Opens the chart")}${opt(so.link,ICON_VIDEO,"Video","Watch on YouTube")}</div>
     ${notes?`<div class="note">${esc(notes)}</div>`:""}
+    ${filesHtml(so)}
     <div class="row">${S.canWrite?`<button type="button" class="btn" id="shEdit">Edit</button>`:""}<button type="button" class="btn primary" id="shClose">Close</button></div>
   </div>`;
   sheetBody.querySelector("#shClose").onclick=()=>sheet.close();
   const ed=sheetBody.querySelector("#shEdit");
   if(ed)ed.onclick=()=>{sheet.close();if(idx!=null&&S.open)dlgSet(idx);else dlgSong(songId)};
-  sheet.showModal();
+  const inp=sheetBody.querySelector("#upInput"),zone=sheetBody.querySelector("#upZone");
+  if(inp){
+    inp.onchange=()=>{if(inp.files.length)uploadFiles(songId,idx,inp.files)};
+    ["dragenter","dragover"].forEach(t=>zone.addEventListener(t,e=>{e.preventDefault();zone.classList.add("drag")}));
+    ["dragleave","drop"].forEach(t=>zone.addEventListener(t,e=>{e.preventDefault();zone.classList.remove("drag")}));
+    zone.addEventListener("drop",e=>{if(e.dataTransfer.files.length)uploadFiles(songId,idx,e.dataTransfer.files)});
+  }
+  sheetBody.querySelectorAll("[data-fdel]").forEach(b=>b.onclick=()=>{if(!b.classList.contains("armed")){b.classList.add("armed");b.textContent="Tap to confirm";return}removeFile(songId,idx,b.dataset.fdel)});
+  if(!sheet.open)sheet.showModal();
 }
 sheet.addEventListener("click",ev=>{if(ev.target===sheet)sheet.close()});
+sheet.addEventListener("close",()=>{sheetBody.querySelectorAll("audio").forEach(a=>a.pause());pull()});
 
 /* ---------- actions ---------- */
 const WRITE_ACTS=new Set(["svc-new","svc-edit","run-add","run-edit","run-mv","run-template","set-add","set-edit","set-mv","as-add","as-edit","as-cycle","as-std","song-add","song-edit","person-add","person-edit"]);

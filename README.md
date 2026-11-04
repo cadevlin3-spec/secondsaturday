@@ -157,6 +157,8 @@ Each device stays unlocked for 60 days; **Lock** in the planner signs it out.
 - `functions/_lib/team-auth.js` checks the PINs and shows the PIN screen.
 - `functions/api/team/[[path]].js` reads plans for anyone signed in and saves changes for admins only.
 - Data lives in the Cloudflare D1 database **second-saturday-planner** (bound in `wrangler.toml`).
+- Song files (MP3s and other audio, PDF charts, images, Word/text) are uploaded from a song's pop-up in the admin view,
+  up to 25 MB each, and stored in the Cloudflare KV namespace **second-saturday-planner-files** (binding `FILES`).
 - The PINs are stored in that database, not in this repo. To change one, run this in
   Cloudflare → D1 → second-saturday-planner → Console (everyone at that level re-enters the new PIN):
 
