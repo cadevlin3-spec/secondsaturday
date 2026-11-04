@@ -19,7 +19,7 @@ portable, and free to host.
 | `assets/site.css`, `assets/site.js` | Shared look and behavior for every page. |
 | `bulletin-data.js`   | **The one file you edit each month** (dates, locations, notes). |
 | `img/`, `video/`     | Web-sized photos and the home page video. |
-| `functions/_middleware.js` | Sends www and the old pages.dev address to secondsaturdayworship.com. |
+| `functions/_middleware.js` | Sends www and the old pages.dev address to secondsaturdayworship.com, and team.secondsaturdayworship.com to the team planner. |
 
 To add a photo to the gallery, put it in `img/` and copy one `<a href=...><img ...></a>` line in `gallery/index.html`.
 
@@ -140,14 +140,15 @@ Second Saturday worship nights.
 
 ---
 
-## Team planner (secondsaturdayworship.com/team/)
+## Team planner (team.secondsaturdayworship.com)
 
 A PIN-locked planner for the team: services and run sheets, setlists with keys,
 who's serving, the song library and the roster. It isn't linked from the public
 pages; share the address with the team. (The footer **©** opens the photo portal.)
 
 - `team/index.html` is the planner page.
-- `functions/team/_middleware.js` shows the PIN screen until the right PIN is entered
+- `functions/_middleware.js` sends team.secondsaturdayworship.com to the planner, and
+  `functions/_lib/team-auth.js` shows the PIN screen until the right PIN is entered
   (the device then stays unlocked for 60 days; **Lock** in the planner signs it out).
 - `functions/api/team/[[path]].js` reads and saves plans.
 - Data lives in the Cloudflare D1 database **second-saturday-planner** (bound in `wrangler.toml`).
