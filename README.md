@@ -143,8 +143,8 @@ Second Saturday worship nights.
 ## Team planner (secondsaturdayworship.com/team/)
 
 A PIN-locked planner for the team: services and run sheets, setlists with keys,
-who's serving, the song library and the roster. The hidden link is the **©**
-in every page footer.
+who's serving, the song library and the roster. It isn't linked from the public
+pages; share the address with the team. (The footer **©** opens the photo portal.)
 
 - `team/index.html` is the planner page.
 - `functions/team/_middleware.js` shows the PIN screen until the right PIN is entered
