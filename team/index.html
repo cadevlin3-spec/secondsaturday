@@ -184,6 +184,13 @@ dialog{border:1px solid var(--line);border-radius:18px;padding:0;background:var(
 .sheet .up.drag{border-color:var(--accent);background:#fff6ef}
 .sheet .up .prog{font-weight:600;color:var(--ink)}
 .filechip{display:inline-block;margin-left:6px;font:700 11px var(--f-body);letter-spacing:.04em;color:var(--accent);background:#fff1e6;border-radius:999px;padding:1px 7px;vertical-align:1px}
+.sheet .capo{display:flex;align-items:center;justify-content:center;gap:8px;font:600 14px var(--f-body);color:var(--muted)}
+.sheet .capo select{font:600 15px var(--f-body);color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:8px 10px}
+.sheet .capohint{font-size:13px;color:var(--muted)}
+.sheet .opt.keys{cursor:default}
+.sheet .kchips{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.sheet .kchips a{font:700 14px var(--f-body);min-width:38px;text-align:center;padding:6px 0;border-radius:10px;border:1px solid var(--line);color:var(--accent);text-decoration:none}
+.sheet .kchips a:hover{border-color:var(--accent);background:#fff6ef}
 .sheet .row{display:flex;flex-wrap:wrap;gap:8px;width:100%;justify-content:center;margin-top:4px}
 dialog::backdrop{background:rgba(27,23,20,.35)}
 dialog form{display:grid;gap:0}
@@ -481,9 +488,13 @@ function dlgSong(id){
     body:`${fIn("title","Title",so.title,"required")}${fIn("artist","Artist / writer",so.artist)}
     <div class="frow">${fSel("defaultKey","Usual key (optional)",[["","None"],...KEYS],so.defaultKey)}${fIn("bpm","BPM",so.bpm,'type="number" min="0" inputmode="numeric"')}</div>
     ${fIn("link","YouTube link",so.link,'type="url" placeholder="https://"')}
-    ${fIn("chart","Chord chart link",so.chart,'type="url" placeholder="https://"')}
+    ${fIn("chart","Chord chart page link",so.chart,'type="url" placeholder="https://"')}
+    ${fIn("pdfurl","WorshipChords PDF link (any key)",so.pdf?pdfUrl(so.pdf,"C"):"",'type="url" placeholder="https://worshipchords.com/pdf/…-key-c-12345.pdf"')}
+    <p class="hint">Paste a PDF link from WorshipChords in any key. The planner then offers that chart in every key, with capo options.</p>
     ${fArea("notes","Notes",so.notes)}`,
-    onSave:async fd=>{const d={};["title","artist","defaultKey","bpm","link","chart","notes"].forEach(k=>d[k]=String(fd.get(k)||"").trim());["link","chart"].forEach(k=>{if(d[k]&&!/^https?:\/\//i.test(d[k]))d[k]="https://"+d[k]});const prev=songById(sid);if(prev&&prev.files)d.files=prev.files;return write("songs",sid,d)},
+    onSave:async fd=>{const d={};["title","artist","defaultKey","bpm","link","chart","notes"].forEach(k=>d[k]=String(fd.get(k)||"").trim());["link","chart"].forEach(k=>{if(d[k]&&!/^https?:\/\//i.test(d[k]))d[k]="https://"+d[k]});const prev=songById(sid);if(prev){["files","pdf","pdf2"].forEach(k=>{if(prev[k]!=null)d[k]=prev[k]})}
+      const pu=String(fd.get("pdfurl")||"").trim();const pm=/worshipchords\.com\/pdf\/(.+)-key-[a-g]-(\d+)\.pdf/i.exec(pu);
+      if(pm)d.pdf=Object.assign({},d.pdf||{},{slug:pm[1],id:pm[2],keys:(d.pdf&&d.pdf.slug===pm[1]&&d.pdf.keys)||"cdefgab"});else if(!pu)delete d.pdf;return write("songs",sid,d)},
     onDelete:isNew?null:async()=>remove("songs",sid),delLabel:"Delete song"});
 }
 function dlgPerson(id){
@@ -543,6 +554,30 @@ async function removeFile(songId,idx,fid){
   const so=clone(songById(songId));so.files=(so.files||[]).filter(f=>f.id!==fid);delete so.id;
   if(await write("songs",songId,so)){try{await api("DELETE","/files/"+fid)}catch(e){};toast("File removed");openSheet(songId,idx)}
 }
+const NOTE_IX={C:0,"C#":1,Db:1,D:2,"D#":3,Eb:3,E:4,F:5,"F#":6,Gb:6,G:7,"G#":8,Ab:8,A:9,"A#":10,Bb:10,B:11};
+const NAT={0:"C",2:"D",4:"E",5:"F",7:"G",9:"A",11:"B"};
+const SHARP=["C","C#","D","Eb","E","F","F#","G","Ab","A","Bb","B"];
+const pdfUrl=(p,k)=>`https://worshipchords.com/pdf/${p.slug}-key-${k.toLowerCase()}-${p.id}.pdf`;
+function rootIx(key){const m=/^([A-G][#b]?)/.exec(key||"");return m&&NOTE_IX[m[1]]!=null?NOTE_IX[m[1]]:null}
+function shapeFor(key,capo){const i=rootIx(key);if(i==null)return null;return (i-capo+120)%12}
+function getCapo(id){try{return +(localStorage.getItem("capo:"+id)||0)||0}catch(e){return 0}}
+function setCapo(id,v){try{v?localStorage.setItem("capo:"+id,String(v)):localStorage.removeItem("capo:"+id)}catch(e){}}
+function chartBlock(so,key){
+  const pdfs=[so.pdf,so.pdf2].filter(p=>p&&p.slug&&p.id);
+  if(!pdfs.length)return null;
+  const multi=pdfs.length>1;
+  if(key&&rootIx(key)!=null){
+    const capo=getCapo(so.id);const sh=shapeFor(key,capo);const shName=NAT[sh];
+    const capoSel=`<label class="capo">Capo <select id="capoSel" aria-label="Capo">${[0,1,2,3,4,5,6,7].map(c=>{const x=NAT[shapeFor(key,c)];return `<option value="${c}"${c===capo?" selected":""}>${c?`Capo ${c} · ${x?x+" shapes":SHARP[shapeFor(key,c)]+" (no PDF)"}`:"No capo"}</option>`}).join("")}</select></label>`;
+    const btns=pdfs.map(p=>{const ok=shName&&p.keys.includes(shName.toLowerCase());const lab="Chord chart"+(multi&&p.label?": "+esc(p.label):"");
+      const sub=capo?`Capo ${capo} · ${shName||SHARP[sh]} shapes · PDF`:`Key of ${esc(key)} · PDF`;
+      return ok?`<a class="opt" href="${pdfUrl(p,shName)}" target="_blank" rel="noopener">${ICON_CHART}<span>${lab}<small>${sub}</small></span></a>`
+        :`<div class="opt off">${ICON_CHART}<span>${lab}<small>No free PDF in ${shName||SHARP[sh]}${capo?" shapes":""}. ${capo?"Try another capo.":"Pick a capo below."}</small></span></div>`}).join("");
+    const hint=!shName?`<div class="capohint">Free PDFs come in C, D, E, F, G, A and B. With a capo: ${[1,2,3,4,5].filter(c=>NAT[shapeFor(key,c)]).map(c=>`Capo ${c} = ${NAT[shapeFor(key,c)]}`).join(", ")}.</div>`:"";
+    return btns+capoSel+hint;
+  }
+  return pdfs.map(p=>`<div class="opt keys">${ICON_CHART}<span>Chord chart${multi&&p.label?": "+esc(p.label):""}<small>Key not picked yet. Open a PDF in:</small><span class="kchips">${"CDEFGAB".split("").filter(k=>p.keys.includes(k.toLowerCase())).map(k=>`<a href="${pdfUrl(p,k)}" target="_blank" rel="noopener">${k}</a>`).join("")}</span></span></div>`).join("");
+}
 function openSheet(songId,idx){
   const so=songById(songId);if(!so)return;
   const e=idx!=null&&S.open?((S.services.find(x=>x.id===S.open)||{}).setlist||[])[idx]:null;
@@ -553,12 +588,14 @@ function openSheet(songId,idx){
     <h2 id="shTitle">${esc(so.title)}</h2>
     ${so.artist?`<div class="sub">${esc(so.artist)}</div>`:""}
     ${key?`<span class="bigkey">${fromSet?"Key of":"Usual key:"} ${esc(key)}</span>`:(fromSet?`<span class="sub">Key not picked yet</span>`:"")}
-    <div class="opts">${opt(so.chart,ICON_CHART,"Chord chart",key?"Use the key of "+esc(key):"Opens the chart")}${opt(so.link,ICON_VIDEO,"Video","Watch on YouTube")}</div>
+    <div class="opts">${chartBlock(so,key)??opt(so.chart,ICON_CHART,"Chord chart",key?"Use the key of "+esc(key):"Opens the chart")}${opt(so.link,ICON_VIDEO,"Video","Watch on YouTube")}</div>
     ${notes?`<div class="note">${esc(notes)}</div>`:""}
     ${filesHtml(so)}
     <div class="row">${S.canWrite&&fromSet&&key?`<button type="button" class="btn" id="shClear">Remove key</button>`:""}${S.canWrite?`<button type="button" class="btn" id="shEdit">Edit</button>`:""}<button type="button" class="btn primary" id="shClose">Close</button></div>
   </div>`;
   sheetBody.querySelector("#shClose").onclick=()=>sheet.close();
+  const cs=sheetBody.querySelector("#capoSel");
+  if(cs)cs.onchange=()=>{setCapo(songId,+cs.value);openSheet(songId,idx)};
   const clr=sheetBody.querySelector("#shClear");
   if(clr)clr.onclick=async()=>{const sv=clone(S.services.find(x=>x.id===S.open));if(!sv||!sv.setlist[idx])return;sv.setlist[idx].key="";delete sv.id;if(await write("services",S.open,sv)){toast("Key removed");openSheet(songId,idx)}};
   const ed=sheetBody.querySelector("#shEdit");
