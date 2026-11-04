@@ -80,12 +80,12 @@ const pinPage = (mode) => `<!doctype html>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="robots" content="noindex,nofollow">
-<meta name="theme-color" content="#070605">
+<meta name="theme-color" content="#ffffff">
 <title>${mode === "admin" ? "Admin" : "Team"} · Second Saturday</title>
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,500..900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
-:root{--bg:#070605;--surface:#100e0c;--line:rgba(255,240,225,.14);--fg:#f6f2ec;--muted:#a8a199;--ember:#efa06e;--bad:#f2a283;color-scheme:dark}
+:root{--bg:#ffffff;--surface:#f5f2ee;--line:rgba(27,23,20,.14);--fg:#1b1714;--muted:#6b645c;--ember:#c4672f;--bad:#9a3a1c;color-scheme:light}
 *{box-sizing:border-box}
 html,body{height:100%;margin:0;background:var(--bg);color:var(--fg);font-family:Inter,system-ui,sans-serif}
 body{display:grid;place-items:center;padding:24px max(16px,env(safe-area-inset-left,0px)) 24px max(16px,env(safe-area-inset-right,0px))}
@@ -96,7 +96,7 @@ p{margin:0;color:var(--muted);font-size:15px}
 .eyebrow{font:700 11px/1 Inter,sans-serif;letter-spacing:.26em;text-transform:uppercase;color:var(--ember)}
 input{width:100%;font:700 30px/1 Inter,sans-serif;letter-spacing:.5em;text-align:center;padding:14px 0 14px .5em;background:var(--surface);color:var(--fg);border:1px solid var(--line);border-radius:14px}
 input:focus{outline:2px solid var(--ember);outline-offset:2px}
-button{width:100%;font:600 16px/1 Inter,sans-serif;padding:15px;border-radius:999px;border:0;background:var(--ember);color:#1a0f07;cursor:pointer}
+button{width:100%;font:600 16px/1 Inter,sans-serif;padding:15px;border-radius:999px;border:0;background:var(--ember);color:#fff;cursor:pointer}
 button:disabled{opacity:.6}
 .err{color:var(--bad);min-height:1.2em;font-size:14px}
 a{color:var(--muted);font-size:13px}
