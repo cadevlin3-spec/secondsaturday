@@ -158,6 +158,19 @@ tbody tr.click:hover{background:var(--sunk)}
 
 /* dialog */
 dialog{border:1px solid var(--line);border-radius:18px;padding:0;background:var(--surface);color:var(--ink);width:min(520px,calc(100vw - 32px));max-height:calc(100dvh - 48px)}
+.sheet{width:min(440px,calc(100vw - 32px))}
+.sheet .sh{display:grid;gap:14px;padding:22px 20px 18px;justify-items:center;text-align:center}
+.sheet h2{font-size:22px}
+.sheet .sub{color:var(--muted);font-size:14px;margin-top:-8px}
+.sheet .bigkey{font:800 15px var(--f-body);color:var(--accent);background:#fff1e6;border-radius:999px;padding:6px 14px}
+.sheet .opts{display:grid;gap:10px;width:100%;margin-top:4px}
+.sheet .opt{display:flex;align-items:center;gap:14px;width:100%;text-align:left;padding:14px 16px;border:1px solid var(--line);border-radius:14px;background:var(--surface);color:var(--ink);text-decoration:none;font:600 16px var(--f-body)}
+.sheet a.opt:hover{border-color:var(--accent)}
+.sheet .opt svg{flex:none;width:26px;height:26px;color:var(--accent)}
+.sheet .opt small{display:block;font-weight:500;font-size:13px;color:var(--muted);margin-top:2px}
+.sheet .opt.off{opacity:.5}
+.sheet .note{font-size:14px;color:var(--muted);white-space:pre-wrap}
+.sheet .row{display:flex;gap:8px;width:100%;justify-content:center;margin-top:4px}
 dialog::backdrop{background:rgba(27,23,20,.35)}
 dialog form{display:grid;gap:0}
 .dtitle{padding:16px 18px 6px}
@@ -177,6 +190,10 @@ legend{font-size:13px;font-weight:600;color:var(--muted);padding:0 4px}
 .toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:#fff;padding:9px 16px;border-radius:999px;font-size:14px;font-weight:600;z-index:20;max-width:calc(100vw - 32px)}
 @media (max-width:560px){
   header nav{order:3;flex:1 1 100%;justify-content:space-between}
+  .hrow{gap:10px}
+  .brand .wm{letter-spacing:.1em}
+  .brand img{width:28px;height:28px}
+  .role{padding:4px 8px;letter-spacing:.06em}
   header nav button{flex:1}
   .svc{grid-template-columns:56px 1fr}
   .meters{grid-column:2;justify-content:flex-start}
@@ -200,6 +217,7 @@ legend{font-size:13px;font-weight:600;color:var(--muted);padding:0 4px}
 </header>
 <main class="wrap" id="app"><p class="muted">Loading plans…</p></main>
 <dialog id="dlg"><form id="dlgForm" novalidate></form></dialog>
+<dialog id="sheet" class="sheet" aria-labelledby="shTitle"><div id="sheetBody"></div></dialog>
 <div class="toast" id="toast" hidden></div>
 
 <script>
@@ -315,9 +333,9 @@ function panelSet(s){
   const list=s.setlist||[];
   let h=`<section class="panel"><div class="phead"><h2>Setlist</h2><span class="sum">${list.length} songs</span><button type="button" class="btn small w" data-act="set-add">Add song</button></div>`;
   if(!list.length)return h+`<div class="pempty">No songs picked yet. Add from the team's song library, with the key for this night.</div></section>`;
-  h+=`<ol class="rows set">`+list.map((e,i)=>{const so=songById(e.songId)||{title:e.title||"Removed song"};return`<li class="click" data-act="set-edit" data-i="${i}">
+  h+=`<ol class="rows set">`+list.map((e,i)=>{const so=songById(e.songId)||{title:e.title||"Removed song"};return`<li class="click" data-act="song-sheet" data-i="${i}">
     <span class="n">${i+1}</span>
-    <div class="what"><b>${esc(so.title)}</b><span>${esc([so.artist,so.bpm?so.bpm+" bpm":"",e.notes].filter(Boolean).join(" · "))}</span>${(so.link||so.chart)?`<span class="links">${so.link?`<a class="ext" href="${esc(so.link)}" target="_blank" rel="noopener">YouTube ↗</a>`:""}${so.chart?`<a class="ext" href="${esc(so.chart)}" target="_blank" rel="noopener">Chart ↗</a>`:""}</span>`:""}</div>
+    <div class="what"><b>${esc(so.title)}</b><span>${esc([so.artist,so.bpm?so.bpm+" bpm":"",e.notes].filter(Boolean).join(" · "))}</span></div>
     <div class="mv">${(e.key||so.defaultKey)?`<span class="key">${esc(e.key||so.defaultKey)}</span>`:""}<span class="w"><button type="button" aria-label="Move up" data-act="set-mv" data-i="${i}" data-d="-1">↑</button><button type="button" aria-label="Move down" data-act="set-mv" data-i="${i}" data-d="1">↓</button></span></div></li>`}).join("")+`</ol></section>`;
   return h;
 }
@@ -342,7 +360,7 @@ function viewSongs(){
   if(!S.loaded.songs&&!S.noDb)return h+`<p class="muted">Loading songs…</p>`;
   if(!S.songs.length)return h+`<div class="empty"><strong>The song library is empty</strong><span>Add the songs the team plays, with their usual key, tempo and a link to the chart.</span><button type="button" class="btn primary w" data-act="song-add">Add the first song</button></div>`;
   h+=`<div class="tbl"><table><thead><tr><th>Song</th><th>Key</th><th class="hide-sm">BPM</th><th>Last played</th><th class="hide-sm">Links</th></tr></thead><tbody>`+
-  list.map(s=>{const lu=songLastUsed(s.id);return`<tr class="click" data-act="song-edit" data-id="${esc(s.id)}"><td><b>${esc(s.title)}</b>${s.artist?`<div class="muted" style="font-size:13px">${esc(s.artist)}</div>`:""}</td><td>${s.defaultKey?`<span class="key">${esc(s.defaultKey)}</span>`:""}</td><td class="mono hide-sm">${esc(s.bpm||"")}</td><td class="muted">${lu?esc(fmtShort(lu)):"Not yet"}</td><td class="hide-sm"><span class="links">${s.link?`<a class="ext" href="${esc(s.link)}" target="_blank" rel="noopener">YouTube ↗</a>`:""}${s.chart?`<a class="ext" href="${esc(s.chart)}" target="_blank" rel="noopener">Chart ↗</a>`:""}</span></td></tr>`}).join("")+`</tbody></table></div>`;
+  list.map(s=>{const lu=songLastUsed(s.id);return`<tr class="click" data-act="song-sheet" data-id="${esc(s.id)}"><td><b>${esc(s.title)}</b>${s.artist?`<div class="muted" style="font-size:13px">${esc(s.artist)}</div>`:""}</td><td>${s.defaultKey?`<span class="key">${esc(s.defaultKey)}</span>`:""}</td><td class="mono hide-sm">${esc(s.bpm||"")}</td><td class="muted">${lu?esc(fmtShort(lu)):"Not yet"}</td><td class="hide-sm"><span class="links">${s.link?`<a class="ext" href="${esc(s.link)}" target="_blank" rel="noopener">YouTube ↗</a>`:""}${s.chart?`<a class="ext" href="${esc(s.chart)}" target="_blank" rel="noopener">Chart ↗</a>`:""}</span></td></tr>`}).join("")+`</tbody></table></div>`;
   if(!list.length)h+=`<p class="muted">No songs match “${esc(S.q)}”.</p>`;
   return h;
 }
@@ -465,6 +483,31 @@ function dlgPerson(id){
     onDelete:isNew?null:async()=>remove("people",pid),delLabel:"Remove from team"});
 }
 
+/* ---------- song sheet (chart or video) ---------- */
+const sheet=document.getElementById("sheet"),sheetBody=document.getElementById("sheetBody");
+const ICON_CHART='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 13h6M9 17h4"/></svg>';
+const ICON_VIDEO='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="3"/><path d="M10 9.5v5l4.5-2.5z" fill="currentColor"/></svg>';
+function openSheet(songId,idx){
+  const so=songById(songId);if(!so)return;
+  const e=idx!=null&&S.open?((S.services.find(x=>x.id===S.open)||{}).setlist||[])[idx]:null;
+  const key=(e&&e.key)||so.defaultKey||"";
+  const notes=[e&&e.notes,so.notes].filter(Boolean).join("\n");
+  const opt=(href,icon,label,sub)=>href?`<a class="opt" href="${esc(href)}" target="_blank" rel="noopener">${icon}<span>${label}<small>${sub}</small></span></a>`:`<div class="opt off">${icon}<span>${label}<small>Not added yet</small></span></div>`;
+  sheetBody.innerHTML=`<div class="sh">
+    <h2 id="shTitle">${esc(so.title)}</h2>
+    ${so.artist?`<div class="sub">${esc(so.artist)}</div>`:""}
+    ${key?`<span class="bigkey">Key of ${esc(key)}</span>`:""}
+    <div class="opts">${opt(so.chart,ICON_CHART,"Chord chart",key?"Use the key of "+esc(key):"Opens the chart")}${opt(so.link,ICON_VIDEO,"Video","Watch on YouTube")}</div>
+    ${notes?`<div class="note">${esc(notes)}</div>`:""}
+    <div class="row">${S.canWrite?`<button type="button" class="btn" id="shEdit">Edit</button>`:""}<button type="button" class="btn primary" id="shClose">Close</button></div>
+  </div>`;
+  sheetBody.querySelector("#shClose").onclick=()=>sheet.close();
+  const ed=sheetBody.querySelector("#shEdit");
+  if(ed)ed.onclick=()=>{sheet.close();if(idx!=null&&S.open)dlgSet(idx);else dlgSong(songId)};
+  sheet.showModal();
+}
+sheet.addEventListener("click",ev=>{if(ev.target===sheet)sheet.close()});
+
 /* ---------- actions ---------- */
 const WRITE_ACTS=new Set(["svc-new","svc-edit","run-add","run-edit","run-mv","run-template","set-add","set-edit","set-mv","as-add","as-edit","as-cycle","as-std","song-add","song-edit","person-add","person-edit"]);
 document.addEventListener("click",async ev=>{
@@ -474,6 +517,10 @@ document.addEventListener("click",async ev=>{
   const act=el.dataset.act,i=el.dataset.i!=null?+el.dataset.i:null,id=el.dataset.id;
   if(el.tagName==="A")return;
   if(act==="open"){S.open=id;render();window.scrollTo(0,0);return}
+  if(act==="song-sheet"){
+    if(el.dataset.i!=null){const sv=S.services.find(x=>x.id===S.open);const en=sv&&(sv.setlist||[])[+el.dataset.i];if(en)openSheet(en.songId,+el.dataset.i)}
+    else openSheet(id,null);
+    return}
   if(act==="back"){S.open=null;render();return}
   if(act==="copy"){ev.stopPropagation();try{await navigator.clipboard.writeText(el.dataset.v);toast("Copied")}catch(e){const r=document.createRange();r.selectNodeContents(el);const sel=getSelection();sel.removeAllRanges();sel.addRange(r);toast("Selected. Press copy to copy it.")}return}
   if(WRITE_ACTS.has(act)&&!S.canWrite)return;
@@ -514,7 +561,7 @@ applyRO();
 render();
 let lastSig="";
 async function pull(){
-  if(dlg.open)return;
+  if(dlg.open||sheet.open)return;
   try{
     const d=await api("GET","/all");
     const sig=JSON.stringify(d.records);
