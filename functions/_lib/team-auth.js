@@ -1,7 +1,14 @@
 // Shared PIN gate for the team planner.
-// The PIN and the session token live in the D1 "settings" table, not in this repo.
-export const COOKIE = "ss_team";
+// Two levels: the team PIN opens a view-only planner (team.secondsaturdayworship.com),
+// the admin PIN opens the editable planner (admin.team.secondsaturdayworship.com).
+// PINs and session tokens live in the D1 "settings" table, not in this repo:
+//   pin / token             -> team (view only)
+//   admin_pin / admin_token -> admin (can edit)
 const MAX_AGE = 60 * 60 * 24 * 60; // 60 days
+const LEVELS = {
+  team: { cookie: "ss_team", pin: "pin", token: "token" },
+  admin: { cookie: "ss_admin", pin: "admin_pin", token: "admin_token" },
+};
 
 function readCookie(request, name) {
   const raw = request.headers.get("cookie") || "";
@@ -17,56 +24,64 @@ async function setting(env, k) {
   return row ? row.v : null;
 }
 
-export async function sessionToken(env) {
-  let t = await setting(env, "token");
+async function tokenFor(env, mode) {
+  const key = LEVELS[mode].token;
+  let t = await setting(env, key);
   if (!t) {
     const b = crypto.getRandomValues(new Uint8Array(32));
     t = [...b].map((x) => x.toString(16).padStart(2, "0")).join("");
-    await env.DB.prepare("INSERT OR IGNORE INTO settings (k, v) VALUES ('token', ?)").bind(t).run();
-    t = await setting(env, "token");
+    await env.DB.prepare("INSERT OR IGNORE INTO settings (k, v) VALUES (?, ?)").bind(key, t).run();
+    t = await setting(env, key);
   }
   return t;
 }
 
-export async function isUnlocked(request, env) {
-  const c = readCookie(request, COOKIE);
-  if (!c) return false;
-  const t = await setting(env, "token");
-  return !!t && c === t;
+// "admin", "team", or null. An admin session can also view.
+export async function roleOf(request, env) {
+  for (const mode of ["admin", "team"]) {
+    const c = readCookie(request, LEVELS[mode].cookie);
+    if (!c) continue;
+    const t = await setting(env, LEVELS[mode].token);
+    if (t && c === t) return mode;
+  }
+  return null;
 }
 
-export async function checkPin(env, pin) {
-  const want = await setting(env, "pin");
-  return !!want && String(pin || "").trim() === want;
+// Checks the PIN for a level and returns the Set-Cookie header value, or null.
+export async function login(env, mode, pin) {
+  if (!LEVELS[mode]) return null;
+  const want = await setting(env, LEVELS[mode].pin);
+  if (!want || String(pin || "").trim() !== want) return null;
+  const token = await tokenFor(env, mode);
+  return `${LEVELS[mode].cookie}=${token}; Path=/; Max-Age=${MAX_AGE}; HttpOnly; Secure; SameSite=Lax`;
 }
 
-export function sessionCookie(token) {
-  return `${COOKIE}=${token}; Path=/; Max-Age=${MAX_AGE}; HttpOnly; Secure; SameSite=Lax`;
-}
-export function clearCookie() {
-  return `${COOKIE}=; Path=/; Max-Age=0; HttpOnly; Secure; SameSite=Lax`;
+export function clearCookies() {
+  return Object.values(LEVELS).map((l) => `${l.cookie}=; Path=/; Max-Age=0; HttpOnly; Secure; SameSite=Lax`);
 }
 
-// Serves the planner (or the PIN screen) for any page request on the team host.
-export async function servePlanner(context) {
+// Serves the planner, or the PIN screen for the given level.
+export async function servePlanner(context, mode = "team") {
   const { request, env } = context;
   const headers = { "cache-control": "no-store", "x-robots-tag": "noindex, nofollow" };
-  if (env.DB && (await isUnlocked(request, env))) {
+  const role = env.DB ? await roleOf(request, env) : null;
+  const ok = mode === "admin" ? role === "admin" : !!role;
+  if (ok) {
     const page = await env.ASSETS.fetch(new Request(new URL("/team/", request.url), { headers: request.headers }));
     const out = new Response(page.body, { status: page.status, headers: page.headers });
     for (const [k, v] of Object.entries(headers)) out.headers.set(k, v);
     return out;
   }
-  return new Response(PIN_PAGE, { status: 200, headers: { "content-type": "text/html; charset=utf-8", ...headers } });
+  return new Response(pinPage(mode), { status: 200, headers: { "content-type": "text/html; charset=utf-8", ...headers } });
 }
 
-const PIN_PAGE = `<!doctype html>
+const pinPage = (mode) => `<!doctype html>
 <html lang="en"><head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="robots" content="noindex,nofollow">
 <meta name="theme-color" content="#070605">
-<title>Team · Second Saturday</title>
+<title>${mode === "admin" ? "Admin" : "Team"} · Second Saturday</title>
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,500..900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -89,10 +104,10 @@ a{color:var(--muted);font-size:13px}
 <body>
 <form id="f" autocomplete="off">
   <img src="/favicon.svg" alt="">
-  <div class="eyebrow">Team only</div>
+  <div class="eyebrow">${mode === "admin" ? "Admin" : "Team only"}</div>
   <h1>Second Saturday Planner</h1>
-  <p>Enter the team PIN to see plans, setlists and the schedule.</p>
-  <input id="pin" name="pin" type="password" inputmode="numeric" pattern="[0-9]*" maxlength="8" aria-label="Team PIN" required autofocus>
+  <p>${mode === "admin" ? "Enter the admin PIN to edit plans, setlists and the schedule." : "Enter the team PIN to see plans, setlists and the schedule."}</p>
+  <input id="pin" name="pin" type="password" inputmode="numeric" pattern="[0-9]*" maxlength="8" aria-label="${mode === "admin" ? "Admin" : "Team"} PIN" required autofocus>
   <button id="go" type="submit">Unlock</button>
   <div class="err" id="err" role="alert"></div>
   <a href="/">Back to secondsaturdayworship.com</a>
@@ -102,7 +117,7 @@ const f=document.getElementById("f"),pin=document.getElementById("pin"),err=docu
 f.addEventListener("submit",async e=>{
   e.preventDefault();err.textContent="";go.disabled=true;go.textContent="Checking…";
   try{
-    const r=await fetch("/api/team/login",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({pin:pin.value})});
+    const r=await fetch("/api/team/login",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({pin:pin.value,mode:"${mode}"})});
     if(r.ok){location.reload();return}
     err.textContent=r.status===401?"That PIN didn't work. Try again.":"The planner isn't reachable right now. Try again in a minute.";
   }catch(x){err.textContent="Couldn't connect. Check your connection and try again."}

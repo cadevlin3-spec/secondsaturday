@@ -37,6 +37,8 @@ body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset
 header{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:color-mix(in srgb,var(--bg) 92%,transparent);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
 .hrow{display:flex;align-items:center;gap:16px;flex-wrap:wrap;padding-block:10px}
 .brand{display:flex;align-items:center;gap:10px;margin-right:auto}
+.role{font:700 11px var(--f-body);letter-spacing:.14em;text-transform:uppercase;padding:5px 10px;border-radius:999px;border:1px solid var(--line);color:var(--muted)}
+.role.admin{color:var(--accent-ink);background:var(--accent);border-color:var(--accent)}
 a.brand{color:inherit;text-decoration:none}
 .brand img{width:32px;height:32px;border-radius:8px;flex:none}
 .brand .wm{font:800 13px/1 var(--f-display);font-stretch:112%;letter-spacing:.2em;text-transform:uppercase;color:var(--ink)}
@@ -189,6 +191,7 @@ legend{font-size:13px;font-weight:600;color:var(--muted);padding:0 4px}
       <button type="button" data-tab="songs">Songs</button>
       <button type="button" data-tab="team">Team</button>
     </nav>
+    <span class="role" id="roleTag" hidden></span>
     <button type="button" class="btn small" id="lockBtn" title="Lock this device">Lock</button>
   </div>
 </header>
@@ -200,7 +203,7 @@ legend{font-size:13px;font-weight:600;color:var(--muted);padding:0 4px}
 const ROLES=["Worship leader","Vocals","Keys","Acoustic guitar","Electric guitar","Bass","Drums","Sound","Lyrics / slides","Livestream","Lighting","Speaker","Host / MC","Prayer team","Hospitality"];
 const STATUS={pending:"Asked",accepted:"Confirmed",declined:"Declined"};
 const KEYS=["C","C#","Db","D","D#","Eb","E","F","F#","Gb","G","G#","Ab","A","A#","Bb","B","Cm","C#m","Dm","D#m","Ebm","Em","Fm","F#m","Gm","G#m","Am","A#m","Bbm","Bm"];
-const S={services:[],songs:[],people:[],tab:"services",open:null,canWrite:true,db:null,loaded:{services:false,songs:false,people:false},noDb:false,q:""};
+const S={services:[],songs:[],people:[],tab:"services",open:null,canWrite:false,db:null,loaded:{services:false,songs:false,people:false},noDb:false,q:""};
 const app=document.getElementById("app");
 const esc=v=>String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const uid=()=>(crypto.randomUUID?crypto.randomUUID():Date.now().toString(36)+Math.random().toString(36).slice(2));
@@ -504,6 +507,7 @@ document.addEventListener("click",async ev=>{
 document.addEventListener("input",e=>{if(e.target.id==="q"){S.q=e.target.value;S._focusQ=true;render()}});
 
 /* ---------- boot ---------- */
+applyRO();
 render();
 let lastSig="";
 async function pull(){
@@ -512,6 +516,8 @@ async function pull(){
     const d=await api("GET","/all");
     const sig=JSON.stringify(d.records);
     S.noDb=false;["services","songs","people"].forEach(c=>S.loaded[c]=true);
+    const admin=d.role==="admin";
+    if(admin!==S.canWrite||document.getElementById("roleTag").hidden){S.canWrite=admin;applyRO();const t=document.getElementById("roleTag");t.hidden=false;t.textContent=admin?"Admin":"View only";t.className="role"+(admin?" admin":"");lastSig=""}
     if(sig!==lastSig){lastSig=sig;["services","songs","people"].forEach(c=>S[c]=(d.records[c]||[]));
       const q=document.activeElement&&document.activeElement.id==="q";if(q)S._focusQ=true;render()}
   }catch(e){if(e.message!=="locked"&&!S.loaded.services){S.noDb=true;render()}}

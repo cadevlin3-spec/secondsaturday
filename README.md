@@ -140,22 +140,31 @@ Second Saturday worship nights.
 
 ---
 
-## Team planner (team.secondsaturdayworship.com)
+## Team planner
 
-A PIN-locked planner for the team: services and run sheets, setlists with keys,
-who's serving, the song library and the roster. It isn't linked from the public
-pages; share the address with the team. (The footer **©** opens the photo portal.)
+| Address | Who | PIN |
+|---|---|---|
+| **team.secondsaturdayworship.com** | The whole team. View only. | Team PIN |
+| **admin.team.secondsaturdayworship.com** | Cade and Mandy. Can edit everything. | Admin PIN |
 
-- `team/index.html` is the planner page.
-- `functions/_middleware.js` sends team.secondsaturdayworship.com to the planner, and
-  `functions/_lib/team-auth.js` shows the PIN screen until the right PIN is entered
-  (the device then stays unlocked for 60 days; **Lock** in the planner signs it out).
-- `functions/api/team/[[path]].js` reads and saves plans.
+A PIN-locked planner: services and run sheets, setlists with keys, who's serving,
+the song library and the roster. It isn't linked from the public pages; share the
+address with the team. (The footer **©** opens the photo portal.)
+Each device stays unlocked for 60 days; **Lock** in the planner signs it out.
+
+- `team/index.html` is the planner page (it hides editing unless the session is admin).
+- `functions/_middleware.js` sends the team and admin addresses to the planner.
+- `functions/_lib/team-auth.js` checks the PINs and shows the PIN screen.
+- `functions/api/team/[[path]].js` reads plans for anyone signed in and saves changes for admins only.
 - Data lives in the Cloudflare D1 database **second-saturday-planner** (bound in `wrangler.toml`).
-- The PIN is stored in that database, not in this repo. To change it, run this in
-  Cloudflare → D1 → second-saturday-planner → Console, then everyone re-enters the new PIN:
+- The PINs are stored in that database, not in this repo. To change one, run this in
+  Cloudflare → D1 → second-saturday-planner → Console (everyone at that level re-enters the new PIN):
 
   ```sql
+  -- team (view only)
   UPDATE settings SET v = '1234' WHERE k = 'pin';
   DELETE FROM settings WHERE k = 'token';
+  -- admin
+  UPDATE settings SET v = '123456' WHERE k = 'admin_pin';
+  DELETE FROM settings WHERE k = 'admin_token';
   ```
