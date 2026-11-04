@@ -1,0 +1,10 @@
+# Cloudflare Pages settings for secondsaturdayworship.com.
+# Binds the team planner's D1 database (functions/api/team, functions/team).
+name = "secondsaturdayworship"
+pages_build_output_dir = "."
+compatibility_date = "2026-10-01"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "second-saturday-planner"
+database_id = "5826cf3f-6664-48ff-a7a8-c65591644801"

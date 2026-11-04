@@ -137,3 +137,24 @@ Live in about a minute.
 Built from the *Website Replication Playbook*. Brand colors and the
 sunrise-and-cross mark come from the ministry's own logo. Photos are from
 Second Saturday worship nights.
+
+---
+
+## Team planner (secondsaturdayworship.com/team/)
+
+A PIN-locked planner for the team: services and run sheets, setlists with keys,
+who's serving, the song library and the roster. The hidden link is the **©**
+in every page footer.
+
+- `team/index.html` is the planner page.
+- `functions/team/_middleware.js` shows the PIN screen until the right PIN is entered
+  (the device then stays unlocked for 60 days; **Lock** in the planner signs it out).
+- `functions/api/team/[[path]].js` reads and saves plans.
+- Data lives in the Cloudflare D1 database **second-saturday-planner** (bound in `wrangler.toml`).
+- The PIN is stored in that database, not in this repo. To change it, run this in
+  Cloudflare → D1 → second-saturday-planner → Console, then everyone re-enters the new PIN:
+
+  ```sql
+  UPDATE settings SET v = '1234' WHERE k = 'pin';
+  DELETE FROM settings WHERE k = 'token';
+  ```

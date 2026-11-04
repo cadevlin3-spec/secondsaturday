@@ -1,0 +1,526 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<meta name="theme-color" content="#070605">
+<title>Team Planner · Second Saturday</title>
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,500..900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* Layout: matches secondsaturdayworship.com — warm black, ember accent, Archivo display; list → detail */
+:root{
+  --bg:#070605; --surface:#100e0c; --sunk:#171411; --ink:#f6f2ec; --muted:#a8a199; --line:rgba(255,240,225,.10);
+  --accent:#efa06e; --accent-ink:#1a0f07; --terra:#efa06e; --teal:#1f1a15; --teal-ink:#f6f2ec; --teal-light:#ffd9a3; --gold:#ffd9a3;
+  --candle:#efa06e; --candle-soft:#171411;
+  --ok:#8fd3ac; --ok-soft:rgba(143,211,172,.12); --warn:#f2c26e; --warn-soft:rgba(242,194,110,.12); --bad:#f2a283; --bad-soft:rgba(242,162,131,.12);
+  --shadow:none;
+  --f-display:'Archivo','Inter',system-ui,sans-serif;
+  --f-body:'Inter',system-ui,-apple-system,'Segoe UI',sans-serif;
+  --f-script:'Archivo','Inter',system-ui,sans-serif;
+  --f-mono:'Inter',system-ui,sans-serif;
+  --r:14px;
+  color-scheme:dark;
+}
+html{background:var(--bg)}
+body{margin:0;font-size:15px}
+:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+[hidden]{display:none!important}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.5}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bg)}
+.wrap{max-width:1080px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+header{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:color-mix(in srgb,var(--bg) 92%,transparent);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+.hrow{display:flex;align-items:center;gap:16px;flex-wrap:wrap;padding-block:10px}
+.brand{display:flex;align-items:center;gap:10px;margin-right:auto}
+a.brand{color:inherit;text-decoration:none}
+.brand img{width:32px;height:32px;border-radius:8px;flex:none}
+.brand .wm{font:800 13px/1 var(--f-display);font-stretch:112%;letter-spacing:.2em;text-transform:uppercase;color:var(--ink)}
+.brand small{display:block;color:var(--accent);font:700 10px var(--f-body);text-transform:uppercase;letter-spacing:.26em;margin-top:5px}
+nav{display:flex;gap:4px;background:var(--sunk);padding:3px;border-radius:999px}
+nav button{border:0;background:transparent;color:var(--muted);font:600 14px var(--f-body);padding:6px 14px;border-radius:999px;cursor:pointer}
+nav button[aria-current="page"]{background:var(--ink);color:#0b0907}
+main{padding-block:24px 64px}
+h1,h2,h3{font-family:var(--f-display);font-stretch:112%;text-wrap:balance;margin:0;font-weight:800;letter-spacing:-.03em;line-height:1.05}
+h1{font-size:clamp(30px,4.6vw,44px)}
+h2{font-size:20px}
+.eyebrow{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.22em;color:var(--accent)}
+.muted{color:var(--muted)}
+.mono{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+.btn{display:inline-flex;align-items:center;gap:6px;border:1.5px solid var(--line);background:var(--surface);color:var(--ink);font:600 14px var(--f-body);padding:8px 16px;border-radius:999px;cursor:pointer;text-decoration:none}
+.btn:hover{border-color:var(--terra)}
+.btn.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.btn.primary:hover{background:#f4b083;border-color:#f4b083}
+.btn.ghost{border-color:transparent;background:transparent;color:var(--accent);padding-inline:6px}
+.btn.danger{color:var(--bad)}
+.btn.small{font-size:13px;padding:5px 12px}
+button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:2px solid var(--terra);outline-offset:2px}
+.ro .w{display:none!important}
+.bar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:18px}
+.bar .grow{margin-right:auto}
+.notice{background:var(--sunk);color:var(--ink);border-radius:var(--r);padding:12px 14px;margin-bottom:18px;font-size:14px}
+.empty{border:1.5px dashed var(--line);border-radius:var(--r);padding:28px 20px;text-align:center;color:var(--muted);display:grid;gap:12px;justify-items:center}
+.empty strong{color:var(--ink);font-size:16px}
+
+/* service list */
+.group{display:grid;gap:10px;margin-bottom:28px}
+.group > .eyebrow{margin-bottom:2px}
+.svc{display:grid;grid-template-columns:58px 1fr auto;gap:16px;align-items:center;width:100%;text-align:left;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:12px 18px 12px 12px;cursor:pointer;color:inherit;font:inherit;box-shadow:var(--shadow)}
+.svc:hover{border-color:var(--terra)}
+.dateblk{display:grid;justify-items:center;line-height:1;padding:7px 0;border-radius:10px;background:var(--bg);border:1px solid var(--line);color:var(--ink)}
+.dateblk .m{font:700 10px var(--f-body);letter-spacing:.1em;text-transform:uppercase;color:var(--accent)}
+.dateblk .d{font:700 24px var(--f-display);margin-top:3px}
+.svc.next{background:linear-gradient(135deg,#241a12,#120e0b);color:var(--teal-ink);border-color:rgba(239,160,110,.35)}
+.svc.next .t span,.svc.next .meters{color:rgba(255,255,255,.8)}
+.svc.next .meters b{color:#fff}
+.svc.next .dateblk{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.svc.next .dateblk .m{color:var(--accent-ink)}
+.svc.next .theme{color:var(--gold)}
+.svc .t{min-width:0}
+.svc .t b{display:block;font-size:16px}
+.svc .t span{font-size:13px;color:var(--muted)}
+.meters{display:flex;gap:14px;font-size:13px;color:var(--muted);flex-wrap:wrap;justify-content:flex-end}
+.meters b{color:var(--ink);font-family:var(--f-mono);font-weight:600}
+.suggest{display:flex;gap:8px;flex-wrap:wrap}
+.past .svc{opacity:.75}
+
+/* detail */
+.dhead{display:grid;gap:8px;margin-bottom:22px;background:linear-gradient(135deg,#241a12,#120e0b);border:1px solid rgba(239,160,110,.3);color:var(--teal-ink);border-radius:20px;padding:22px 24px;box-shadow:var(--shadow)}
+.dhead .eyebrow{color:var(--gold)}
+.dhead .meta{display:flex;gap:16px;flex-wrap:wrap;color:rgba(255,255,255,.85);font-size:14px}
+.dhead .note{max-width:65ch;white-space:pre-wrap;font-size:14px;color:rgba(255,255,255,.9)}
+.dhead .btn{background:rgba(255,255,255,.14);border-color:rgba(255,255,255,.5);color:#fff;justify-self:start}
+.dhead .btn:hover{background:#fff;color:#0b0907}
+.cols{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:20px;align-items:start}
+@media (max-width:820px){.cols{grid-template-columns:minmax(0,1fr)}}
+.stack{display:grid;gap:20px}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:16px;overflow:hidden;box-shadow:var(--shadow)}
+.phead{display:flex;align-items:center;gap:10px;padding:12px 14px;border-bottom:1px solid var(--line)}
+.phead h2{margin-right:auto;font:700 13px var(--f-body);text-transform:uppercase;letter-spacing:.14em;color:var(--accent)}
+.phead .sum{font-size:13px;color:var(--muted)}
+.rows{list-style:none;margin:0;padding:0}
+.rows li{display:grid;gap:12px;align-items:start;padding:10px 14px;border-bottom:1px solid var(--line)}
+.rows li:last-child{border-bottom:0}
+.rows li.click{cursor:pointer}
+.ro .rows li.click{cursor:default}
+.rows li.click:hover{background:var(--sunk)}
+.ro .rows li.click:hover{background:transparent}
+.run li{grid-template-columns:66px minmax(0,1fr) auto}
+.run .clock{font-size:13px;color:var(--teal-light);font-weight:700;padding-top:2px}
+.run .what b{display:block}
+.run .what span,.run .what p{font-size:13px;color:var(--muted);margin:0}
+.run .dur{font-size:13px;color:var(--muted)}
+.pfoot{display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap;padding:10px 14px;background:var(--sunk);font-size:13px}
+.set li{grid-template-columns:24px minmax(0,1fr) auto}
+.set .n{font:800 17px var(--f-display);color:var(--accent);line-height:1.3}
+.set .what b{display:block}
+.set .what span{font-size:13px;color:var(--muted)}
+.key{display:inline-block;font:700 13px var(--f-body);padding:2px 9px;border-radius:999px;background:rgba(239,160,110,.16);color:var(--accent)}
+.mv{display:flex;gap:2px;align-items:center}
+.mv button{border:0;background:transparent;color:var(--muted);cursor:pointer;font-size:14px;padding:2px 5px;border-radius:5px}
+.mv button:hover{background:var(--sunk);color:var(--ink)}
+.sched li{grid-template-columns:minmax(0,1fr) auto}
+.sched .what b{display:block;font-size:14px}
+.sched .what span{font-size:13px;color:var(--muted)}
+.chip{border:0;font:700 12px var(--f-body);letter-spacing:.03em;padding:4px 10px;border-radius:999px;cursor:pointer;white-space:nowrap}
+.ro .chip{cursor:default}
+.chip.accepted{background:var(--ok-soft);color:var(--ok)}
+.chip.pending{background:var(--warn-soft);color:var(--warn)}
+.chip.declined{background:var(--bad-soft);color:var(--bad)}
+.chip.open{background:var(--sunk);color:var(--muted)}
+.ext{font-size:13px;color:var(--accent);text-decoration:none;font-weight:600}
+.ext:hover{text-decoration:underline}
+.pempty{padding:18px 14px;color:var(--muted);font-size:14px;display:grid;gap:10px;justify-items:start}
+
+/* songs + team tables */
+.tbl{background:var(--surface);border:1px solid var(--line);border-radius:16px;overflow-x:auto;box-shadow:var(--shadow)}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th{text-align:left;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.16em;color:var(--accent);padding:10px 14px;border-bottom:1px solid var(--line);white-space:nowrap}
+td{padding:10px 14px;border-bottom:1px solid var(--line);vertical-align:top}
+tr:last-child td{border-bottom:0}
+tbody tr.click{cursor:pointer}
+tbody tr.click:hover{background:var(--sunk)}
+.ro tbody tr.click{cursor:default}
+.ro tbody tr.click:hover{background:transparent}
+.tags{display:flex;gap:4px;flex-wrap:wrap}
+.tag{font-size:12px;padding:2px 8px;border-radius:999px;background:var(--sunk);color:var(--muted);white-space:nowrap}
+.contact{display:grid;gap:2px;font-size:13px}
+.copy{border:0;background:transparent;color:var(--muted);cursor:pointer;font:500 13px var(--f-body);padding:0;text-align:left;user-select:all}
+.copy:hover{color:var(--accent)}
+.search{font:inherit;padding:8px 14px;border:1px solid var(--line);border-radius:999px;background:var(--surface);color:var(--ink);min-width:0;width:220px;max-width:100%}
+
+/* dialog */
+dialog{border:1px solid var(--line);border-radius:18px;padding:0;background:var(--surface);color:var(--ink);width:min(520px,calc(100vw - 32px));max-height:calc(100dvh - 48px)}
+dialog::backdrop{background:rgba(0,0,0,.6)}
+dialog form{display:grid;gap:0}
+.dtitle{padding:16px 18px 6px}
+.dbody{padding:10px 18px 4px;display:grid;gap:12px;overflow:auto}
+.dfoot{display:flex;gap:8px;align-items:center;padding:14px 18px;border-top:1px solid var(--line);margin-top:10px}
+.dfoot .sp{margin-right:auto}
+label.f{display:grid;gap:4px;font-size:13px;font-weight:600;color:var(--muted)}
+label.f{color:var(--ink)}
+label.f input,label.f select,label.f textarea{font:400 15px var(--f-body);color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:9px 11px;width:100%}
+label.f textarea{min-height:70px;resize:vertical}
+.frow{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:12px}
+fieldset{border:1px solid var(--line);border-radius:8px;padding:8px 10px 10px;margin:0}
+legend{font-size:13px;font-weight:600;color:var(--muted);padding:0 4px}
+.checks{display:flex;flex-wrap:wrap;gap:6px}
+.checks label{display:inline-flex;gap:5px;align-items:center;font-size:13px;background:var(--sunk);border-radius:999px;padding:3px 10px 3px 7px;cursor:pointer}
+.hint{font-size:12px;color:var(--muted);margin:0}
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:#0b0907;padding:9px 16px;border-radius:999px;font-size:14px;font-weight:600;z-index:20;max-width:calc(100vw - 32px)}
+@media (max-width:560px){
+  .svc{grid-template-columns:56px 1fr}
+  .meters{grid-column:2;justify-content:flex-start}
+  .hide-sm{display:none}
+}
+@media (prefers-reduced-motion:no-preference){.btn,.svc,nav button{transition:border-color .15s,background .15s}}
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap hrow">
+    <a class="brand" href="/" aria-label="Second Saturday home"><img src="/favicon.svg" alt=""><div><div class="wm">Second Saturday</div><small>Team planner</small></div></a>
+    <nav aria-label="Sections">
+      <button type="button" data-tab="services">Services</button>
+      <button type="button" data-tab="songs">Songs</button>
+      <button type="button" data-tab="team">Team</button>
+    </nav>
+    <button type="button" class="btn small" id="lockBtn" title="Lock this device">Lock</button>
+  </div>
+</header>
+<main class="wrap" id="app"><p class="muted">Loading plans…</p></main>
+<dialog id="dlg"><form id="dlgForm" novalidate></form></dialog>
+<div class="toast" id="toast" hidden></div>
+
+<script>
+const ROLES=["Worship leader","Vocals","Keys","Acoustic guitar","Electric guitar","Bass","Drums","Sound","Lyrics / slides","Livestream","Lighting","Speaker","Host / MC","Prayer team","Hospitality"];
+const STATUS={pending:"Asked",accepted:"Confirmed",declined:"Declined"};
+const KEYS=["C","C#","Db","D","D#","Eb","E","F","F#","Gb","G","G#","Ab","A","A#","Bb","B","Cm","C#m","Dm","D#m","Ebm","Em","Fm","F#m","Gm","G#m","Am","A#m","Bbm","Bm"];
+const S={services:[],songs:[],people:[],tab:"services",open:null,canWrite:true,db:null,loaded:{services:false,songs:false,people:false},noDb:false,q:""};
+const app=document.getElementById("app");
+const esc=v=>String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const uid=()=>(crypto.randomUUID?crypto.randomUUID():Date.now().toString(36)+Math.random().toString(36).slice(2));
+const clone=o=>JSON.parse(JSON.stringify(o));
+const pd=s=>{const[y,m,d]=String(s).split("-").map(Number);return new Date(y,(m||1)-1,d||1)};
+const iso=d=>d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
+const todayISO=()=>iso(new Date());
+function secondSaturday(y,m){const d=new Date(y,m,1);return new Date(y,m,1+((6-d.getDay()+7)%7)+7)}
+function nextSecondSats(n){const out=[],t=new Date();t.setHours(0,0,0,0);let y=t.getFullYear(),m=t.getMonth();while(out.length<n){const d=secondSaturday(y,m);if(d>=t)out.push(iso(d));if(++m>11){m=0;y++}}return out}
+function fmtLong(s){const d=pd(s);const o={weekday:"long",month:"long",day:"numeric"};if(d.getFullYear()!==new Date().getFullYear())o.year="numeric";return d.toLocaleDateString("en-US",o)}
+const fmtShort=s=>pd(s).toLocaleDateString("en-US",{month:"short",day:"numeric"});
+function fmtTime(hm,add=0){if(!hm)return"";const[h,m]=hm.split(":").map(Number);let t=h*60+m+add;t=((t%1440)+1440)%1440;const H=Math.floor(t/60),M=t%60;return((H+11)%12+1)+":"+String(M).padStart(2,"0")+(H<12?" AM":" PM")}
+const songById=id=>S.songs.find(s=>s.id===id);
+const personById=id=>S.people.find(p=>p.id===id);
+const roleIdx=r=>{const i=ROLES.indexOf(r);return i<0?99:i};
+const byName=(a,b)=>String(a.name||a.title||"").localeCompare(String(b.name||b.title||""));
+
+function toast(msg){const t=document.getElementById("toast");t.textContent=msg;t.hidden=false;clearTimeout(toast.h);toast.h=setTimeout(()=>t.hidden=true,2600)}
+
+const API="/api/team";
+async function api(method,path,body){
+  const r=await fetch(API+path,{method,headers:body?{"content-type":"application/json"}:{},body:body?JSON.stringify(body):undefined,credentials:"same-origin"});
+  if(r.status===401){location.reload();throw new Error("locked")}
+  if(!r.ok)throw new Error("http "+r.status);
+  return r.status===204?null:r.json();
+}
+function upsertLocal(col,id,data){const a=S[col],i=a.findIndex(x=>x.id===id),row=Object.assign({id},data);if(i<0)a.push(row);else a[i]=row}
+async function write(col,id,data){
+  const prev=clone(S[col]);upsertLocal(col,id,data);render();
+  try{await api("PUT","/"+col+"/"+encodeURIComponent(id),data);return true}
+  catch(e){S[col]=prev;render();toast("Couldn't save. Check your connection and try again.");return false}
+}
+async function remove(col,id){
+  const prev=clone(S[col]);S[col]=S[col].filter(x=>x.id!==id);render();
+  try{await api("DELETE","/"+col+"/"+encodeURIComponent(id));return true}
+  catch(e){S[col]=prev;render();toast("Couldn't delete. Check your connection and try again.");return false}
+}
+function applyRO(){document.body.classList.toggle("ro",!S.canWrite)}
+
+/* ---------- views ---------- */
+function render(){
+  document.querySelectorAll("nav button").forEach(b=>b.setAttribute("aria-current",b.dataset.tab===S.tab?"page":"false"));
+  let h="";
+  if(S.noDb)h+=`<div class="notice">Can't reach the planner right now. Check your connection; it will retry on its own.</div>`;
+  if(S.tab==="services")h+=S.open?viewDetail():viewServices();
+  else if(S.tab==="songs")h+=viewSongs();
+  else h+=viewTeam();
+  app.innerHTML=h;
+  const q=document.getElementById("q");
+  if(q&&S._focusQ){q.focus();q.setSelectionRange(q.value.length,q.value.length);S._focusQ=false}
+}
+function svcStats(s){
+  const as=s.assignments||[];
+  const conf=as.filter(a=>a.personId&&a.status==="accepted").length;
+  const mins=(s.runSheet||[]).reduce((t,i)=>t+(+i.minutes||0),0);
+  return{conf,total:as.length,songs:(s.setlist||[]).length,mins};
+}
+function svcCard(s,next){
+  const d=pd(s.date),st=svcStats(s);
+  return `<button type="button" class="svc${next?" next":""}" data-act="open" data-id="${esc(s.id)}">
+    <div class="dateblk" aria-hidden="true"><span class="m">${d.toLocaleDateString("en-US",{month:"short"})}</span><span class="d">${d.getDate()}</span></div>
+    <div class="t"><b>${esc(s.title||"Second Saturday")}</b><span>${esc(fmtLong(s.date))}${s.startTime?" · "+fmtTime(s.startTime):""}${s.location?" · "+esc(s.location):""}</span></div>
+    <div class="meters"><span><b>${st.conf}/${st.total}</b> confirmed</span><span><b>${st.songs}</b> songs</span><span class="hide-sm"><b>${st.mins}</b> min</span></div>
+  </button>`;
+}
+function loadingOr(key,html){return S.loaded[key]||S.noDb?html:`<p class="muted">Loading…</p>`}
+function viewServices(){
+  const t=todayISO();
+  const up=S.services.filter(s=>s.date>=t).sort((a,b)=>a.date.localeCompare(b.date));
+  const past=S.services.filter(s=>s.date<t).sort((a,b)=>b.date.localeCompare(a.date)).slice(0,12);
+  const have=new Set(S.services.map(s=>s.date));
+  const sug=nextSecondSats(3).filter(d=>!have.has(d));
+  let h=`<div class="bar"><div class="grow"><div class="eyebrow">Services</div><h1>What's coming up</h1></div>
+    <button type="button" class="btn primary w" data-act="svc-new">New service</button></div>`;
+  if(sug.length)h+=`<div class="group w"><div class="eyebrow">Not planned yet</div><div class="suggest">${sug.map(d=>`<button type="button" class="btn" data-act="svc-new" data-date="${d}">+ Plan ${esc(pd(d).toLocaleDateString("en-US",{weekday:"short",month:"short",day:"numeric"}))}</button>`).join("")}</div></div>`;
+  if(!S.loaded.services&&!S.noDb)return h+`<p class="muted">Loading services…</p>`;
+  h+=`<div class="group"><div class="eyebrow">Upcoming</div>`;
+  h+=up.length?up.map((x,i)=>svcCard(x,i===0)).join(""):`<div class="empty"><strong>No upcoming services yet</strong><span>Plan the next Second Saturday to start building the run sheet, setlist and schedule.</span></div>`;
+  h+=`</div>`;
+  if(past.length)h+=`<div class="group past"><div class="eyebrow">Past</div>${past.map(x=>svcCard(x)).join("")}</div>`;
+  return h;
+}
+function viewDetail(){
+  const s=S.services.find(x=>x.id===S.open);
+  if(!s)return`<div class="bar"><button type="button" class="btn ghost" data-act="back">← All services</button></div><p class="muted">This service was removed.</p>`;
+  const st=svcStats(s);
+  let h=`<div class="bar"><button type="button" class="btn ghost" data-act="back">← All services</button></div>
+  <div class="dhead"><div class="eyebrow">${esc(fmtLong(s.date))}</div><h1>${esc(s.title||"Second Saturday")}</h1>
+  <div class="meta">${s.startTime?`<span>Starts <b class="mono">${fmtTime(s.startTime)}</b></span>`:""}${s.location?`<span>${esc(s.location)}</span>`:""}<span>${st.conf} of ${st.total} roles confirmed</span></div>
+  ${s.notes?`<div class="note">${esc(s.notes)}</div>`:""}<button type="button" class="btn small w" data-act="svc-edit">Edit details</button></div>
+  <div class="cols"><div class="stack">${panelRun(s)}</div><div class="stack">${panelSet(s)}${panelSched(s)}</div></div>`;
+  return h;
+}
+function panelRun(s){
+  const items=s.runSheet||[];let acc=0;
+  const total=items.reduce((t,i)=>t+(+i.minutes||0),0);
+  let h=`<section class="panel"><div class="phead"><h2>Run sheet</h2><span class="sum mono">${total} min</span><button type="button" class="btn small w" data-act="run-add">Add item</button></div>`;
+  if(!items.length)return h+`<div class="pempty"><span>Lay out the night in order with how long each part runs. Start times fill in automatically.</span><button type="button" class="btn small w" data-act="run-template">Start from a basic outline</button></div></section>`;
+  h+=`<ol class="rows run">`+items.map((it,i)=>{const at=acc;acc+=(+it.minutes||0);return`<li class="click" data-act="run-edit" data-i="${i}">
+    <span class="clock mono">${s.startTime?fmtTime(s.startTime,at):"+"+at+"m"}</span>
+    <div class="what"><b>${esc(it.title)}</b>${it.owner?`<span>${esc(it.owner)}</span>`:""}${it.notes?`<p>${esc(it.notes)}</p>`:""}</div>
+    <div class="mv"><span class="dur mono">${+it.minutes||0}m</span><span class="w"><button type="button" aria-label="Move up" data-act="run-mv" data-i="${i}" data-d="-1">↑</button><button type="button" aria-label="Move down" data-act="run-mv" data-i="${i}" data-d="1">↓</button></span></div></li>`}).join("")+`</ol>`;
+  h+=`<div class="pfoot"><span>${items.length} items</span><span>${s.startTime?`Ends about <b class="mono">${fmtTime(s.startTime,total)}</b>`:`Total <b class="mono">${total} min</b>`}</span></div></section>`;
+  return h;
+}
+function panelSet(s){
+  const list=s.setlist||[];
+  let h=`<section class="panel"><div class="phead"><h2>Setlist</h2><span class="sum">${list.length} songs</span><button type="button" class="btn small w" data-act="set-add">Add song</button></div>`;
+  if(!list.length)return h+`<div class="pempty">No songs picked yet. Add from the team's song library, with the key for this night.</div></section>`;
+  h+=`<ol class="rows set">`+list.map((e,i)=>{const so=songById(e.songId)||{title:e.title||"Removed song"};return`<li class="click" data-act="set-edit" data-i="${i}">
+    <span class="n">${i+1}</span>
+    <div class="what"><b>${esc(so.title)}</b><span>${esc([so.artist,so.bpm?so.bpm+" bpm":"",e.notes].filter(Boolean).join(" · "))}</span>${so.link?` <a class="ext" href="${esc(so.link)}" target="_blank" rel="noopener">Chart / reference ↗</a>`:""}</div>
+    <div class="mv">${(e.key||so.defaultKey)?`<span class="key">${esc(e.key||so.defaultKey)}</span>`:""}<span class="w"><button type="button" aria-label="Move up" data-act="set-mv" data-i="${i}" data-d="-1">↑</button><button type="button" aria-label="Move down" data-act="set-mv" data-i="${i}" data-d="1">↓</button></span></div></li>`}).join("")+`</ol></section>`;
+  return h;
+}
+function panelSched(s){
+  const as=[...(s.assignments||[])].sort((a,b)=>roleIdx(a.role)-roleIdx(b.role));
+  const st=svcStats(s);
+  let h=`<section class="panel"><div class="phead"><h2>Who's serving</h2><span class="sum">${st.conf}/${st.total} confirmed</span><button type="button" class="btn small w" data-act="as-add">Add role</button></div>`;
+  if(!as.length)return h+`<div class="pempty"><span>Add the roles you need for this night, then ask people to fill them.</span><button type="button" class="btn small w" data-act="as-std">Add the usual band and tech roles</button></div></section>`;
+  h+=`<ul class="rows sched">`+as.map(a=>{const p=personById(a.personId);const stc=p?(a.status||"pending"):"open";return`<li class="click" data-act="as-edit" data-id="${esc(a.id)}">
+    <div class="what"><b>${esc(a.role)}</b><span>${p?esc(p.name):"Needs someone"}${a.note?" · "+esc(a.note):""}</span></div>
+    <button type="button" class="chip ${stc}" data-act="${p?"as-cycle":"as-edit"}" data-id="${esc(a.id)}" title="${p?"Tap to change status":"Assign someone"}">${p?STATUS[stc]:"Open"}</button></li>`}).join("")+`</ul></section>`;
+  return h;
+}
+function songLastUsed(id){
+  const t=todayISO();let last="";
+  S.services.forEach(s=>{if(s.date<=t&&(s.setlist||[]).some(e=>e.songId===id)&&s.date>last)last=s.date});return last;
+}
+function viewSongs(){
+  const q=S.q.toLowerCase();
+  const list=S.songs.filter(s=>!q||(s.title+" "+(s.artist||"")).toLowerCase().includes(q)).sort(byName);
+  let h=`<div class="bar"><div class="grow"><div class="eyebrow">Library</div><h1>Songs</h1></div><input class="search" id="q" type="search" placeholder="Search songs" value="${esc(S.q)}" aria-label="Search songs"><button type="button" class="btn primary w" data-act="song-add">Add song</button></div>`;
+  if(!S.loaded.songs&&!S.noDb)return h+`<p class="muted">Loading songs…</p>`;
+  if(!S.songs.length)return h+`<div class="empty"><strong>The song library is empty</strong><span>Add the songs the team plays, with their usual key, tempo and a link to the chart.</span><button type="button" class="btn primary w" data-act="song-add">Add the first song</button></div>`;
+  h+=`<div class="tbl"><table><thead><tr><th>Song</th><th>Key</th><th class="hide-sm">BPM</th><th>Last played</th><th class="hide-sm">Chart</th></tr></thead><tbody>`+
+  list.map(s=>{const lu=songLastUsed(s.id);return`<tr class="click" data-act="song-edit" data-id="${esc(s.id)}"><td><b>${esc(s.title)}</b>${s.artist?`<div class="muted" style="font-size:13px">${esc(s.artist)}</div>`:""}</td><td>${s.defaultKey?`<span class="key">${esc(s.defaultKey)}</span>`:""}</td><td class="mono hide-sm">${esc(s.bpm||"")}</td><td class="muted">${lu?esc(fmtShort(lu)):"Not yet"}</td><td class="hide-sm">${s.link?`<a class="ext" href="${esc(s.link)}" target="_blank" rel="noopener">Open ↗</a>`:""}</td></tr>`}).join("")+`</tbody></table></div>`;
+  if(!list.length)h+=`<p class="muted">No songs match “${esc(S.q)}”.</p>`;
+  return h;
+}
+function nextServing(pid){
+  const t=todayISO();
+  return S.services.filter(s=>s.date>=t&&(s.assignments||[]).some(a=>a.personId===pid&&a.status!=="declined")).sort((a,b)=>a.date.localeCompare(b.date));
+}
+function viewTeam(){
+  const q=S.q.toLowerCase();
+  const list=S.people.filter(p=>!q||(p.name+" "+(p.roles||[]).join(" ")+" "+(p.church||"")).toLowerCase().includes(q)).sort(byName);
+  let h=`<div class="bar"><div class="grow"><div class="eyebrow">Roster</div><h1>Team</h1></div><input class="search" id="q" type="search" placeholder="Search name, role, church" value="${esc(S.q)}" aria-label="Search team"><button type="button" class="btn primary w" data-act="person-add">Add person</button></div>`;
+  if(!S.loaded.people&&!S.noDb)return h+`<p class="muted">Loading team…</p>`;
+  if(!S.people.length)return h+`<div class="empty"><strong>No one on the roster yet</strong><span>Add everyone who serves, from each church, with the roles they can cover.</span><button type="button" class="btn primary w" data-act="person-add">Add the first person</button></div>`;
+  h+=`<div class="tbl"><table><thead><tr><th>Name</th><th>Roles</th><th class="hide-sm">Contact</th><th>Next serving</th></tr></thead><tbody>`+
+  list.map(p=>{const ns=nextServing(p.id);return`<tr class="click" data-act="person-edit" data-id="${esc(p.id)}"><td><b>${esc(p.name)}</b>${p.church?`<div class="muted" style="font-size:13px">${esc(p.church)}</div>`:""}</td><td><div class="tags">${(p.roles||[]).map(r=>`<span class="tag">${esc(r)}</span>`).join("")}</div></td><td class="hide-sm"><div class="contact">${p.phone?`<button type="button" class="copy" data-act="copy" data-v="${esc(p.phone)}" title="Copy">${esc(p.phone)}</button>`:""}${p.email?`<button type="button" class="copy" data-act="copy" data-v="${esc(p.email)}" title="Copy">${esc(p.email)}</button>`:""}</div></td><td class="muted">${ns.length?esc(fmtShort(ns[0].date))+(ns.length>1?` <span class="tag">+${ns.length-1}</span>`:""):"—"}</td></tr>`}).join("")+`</tbody></table></div>`;
+  if(!list.length)h+=`<p class="muted">No one matches “${esc(S.q)}”.</p>`;
+  return h;
+}
+
+/* ---------- dialog ---------- */
+const dlg=document.getElementById("dlg"),dform=document.getElementById("dlgForm");
+let dCfg=null;
+function openDialog(cfg){
+  dCfg=cfg;
+  dform.innerHTML=`<div class="dtitle"><h2>${esc(cfg.title)}</h2></div><div class="dbody">${cfg.body}</div>
+  <div class="dfoot">${cfg.onDelete?`<button type="button" class="btn danger" id="dDel">${esc(cfg.delLabel||"Delete")}</button>`:""}<span class="sp"></span><button type="button" class="btn" id="dCancel">Cancel</button><button type="submit" class="btn primary">${esc(cfg.saveLabel||"Save")}</button></div>`;
+  dform.querySelector("#dCancel").onclick=()=>dlg.close();
+  const del=dform.querySelector("#dDel");
+  if(del)del.onclick=async()=>{if(!del.dataset.armed){del.dataset.armed="1";del.textContent="Tap again to confirm";return}if(await cfg.onDelete())dlg.close()};
+  dlg.showModal();
+  const f=dform.querySelector("input:not([type=checkbox]),select,textarea");if(f)f.focus();
+}
+dform.addEventListener("submit",async e=>{
+  e.preventDefault();
+  const fd=new FormData(dform);
+  const bad=[...dform.querySelectorAll("[required]")].find(el=>!String(el.value).trim());
+  if(bad){bad.focus();toast("Fill in "+(bad.dataset.label||"the required field")+".");return}
+  const btn=dform.querySelector("[type=submit]");btn.disabled=true;
+  const ok=await dCfg.onSave(fd);btn.disabled=false;
+  if(ok!==false)dlg.close();
+});
+const fIn=(name,label,val,attrs="")=>`<label class="f">${label}<input id="f_${name}" name="${name}" value="${esc(val)}" ${attrs} data-label="${esc(label.toLowerCase())}"></label>`;
+const fArea=(name,label,val)=>`<label class="f">${label}<textarea id="f_${name}" name="${name}">${esc(val)}</textarea></label>`;
+const fSel=(name,label,opts,val,attrs="")=>`<label class="f">${label}<select id="f_${name}" name="${name}" ${attrs}>${opts.map(o=>{const[v,t]=Array.isArray(o)?o:[o,o];return`<option value="${esc(v)}"${String(v)===String(val??"")?" selected":""}>${esc(t)}</option>`}).join("")}</select></label>`;
+const keyOpts=[["","—"],...KEYS];
+
+const curSvc=()=>S.services.find(x=>x.id===S.open);
+async function saveSvc(s){return write("services",s.id,s)}
+
+function dlgService(s){
+  const isNew=!s;
+  s=s?clone(s):{id:uid(),date:S._newDate||nextSecondSats(1)[0],title:"Second Saturday",startTime:"19:00",location:"",notes:"",runSheet:[],setlist:[],assignments:[]};
+  openDialog({title:isNew?"Plan a service":"Edit service",saveLabel:isNew?"Create":"Save",
+    body:`<div class="frow">${fIn("date","Date",s.date,'type="date" required')}${fIn("startTime","Start time",s.startTime,'type="time"')}</div>
+    ${fIn("title","Name",s.title,'required placeholder="Second Saturday"')}
+    ${fIn("location","Host church / location",s.location,'placeholder="Where it is this month"')}
+    ${fArea("notes","Notes for the team",s.notes)}`,
+    onSave:async fd=>{["date","startTime","title","location","notes"].forEach(k=>s[k]=String(fd.get(k)||"").trim());const ok=await saveSvc(s);if(ok&&isNew){S.open=s.id;render()}return ok},
+    onDelete:isNew?null:async()=>{const ok=await remove("services",s.id);if(ok){S.open=null;render();toast("Service deleted")}return ok},delLabel:"Delete service"});
+}
+function dlgRun(i){
+  const s=clone(curSvc());const isNew=i==null;const it=isNew?{id:uid(),title:"",minutes:5,owner:"",notes:""}:s.runSheet[i];
+  openDialog({title:isNew?"Add run sheet item":"Edit run sheet item",
+    body:`${fIn("title","What happens",it.title,'required placeholder="Welcome and announcements"')}
+    <div class="frow">${fIn("minutes","Minutes",it.minutes,'type="number" min="0" step="1" inputmode="numeric"')}${fIn("owner","Who leads it",it.owner,'list="peopleNames"')}</div>
+    <datalist id="peopleNames">${S.people.map(p=>`<option value="${esc(p.name)}">`).join("")}</datalist>
+    ${fArea("notes","Cues and notes",it.notes)}`,
+    onSave:async fd=>{it.title=String(fd.get("title")).trim();it.minutes=Math.max(0,parseInt(fd.get("minutes"))||0);it.owner=String(fd.get("owner")||"").trim();it.notes=String(fd.get("notes")||"").trim();s.runSheet=s.runSheet||[];if(isNew)s.runSheet.push(it);return saveSvc(s)},
+    onDelete:isNew?null:async()=>{s.runSheet.splice(i,1);return saveSvc(s)},delLabel:"Remove"});
+}
+function dlgSet(i){
+  const s=clone(curSvc());const isNew=i==null;const e=isNew?{songId:"",key:"",notes:""}:s.setlist[i];
+  const opts=[["","Choose a song…"],...[...S.songs].sort(byName).map(so=>[so.id,so.title+(so.artist?" — "+so.artist:"")])];
+  openDialog({title:isNew?"Add to setlist":"Edit setlist song",
+    body:`${fSel("songId","Song from the library",opts,e.songId)}
+    ${isNew?fIn("newTitle","Or add a new song by title","",'placeholder="New song title"'):""}
+    <div class="frow">${fSel("key","Key for this night",keyOpts,e.key)}</div>
+    <p class="hint">Leave the key blank to use the song's usual key.</p>
+    ${fIn("notes","Notes",e.notes,'placeholder="Capo 2, extended bridge, etc."')}`,
+    onSave:async fd=>{
+      let sid=String(fd.get("songId")||"");const nt=String(fd.get("newTitle")||"").trim();
+      if(!sid&&nt){sid=uid();if(!await write("songs",sid,{title:nt,artist:"",defaultKey:String(fd.get("key")||""),bpm:"",link:"",notes:""}))return false}
+      if(!sid){toast("Pick a song or type a new title.");return false}
+      e.songId=sid;e.key=String(fd.get("key")||"");e.notes=String(fd.get("notes")||"").trim();
+      s.setlist=s.setlist||[];if(isNew)s.setlist.push(e);return saveSvc(s)},
+    onDelete:isNew?null:async()=>{s.setlist.splice(i,1);return saveSvc(s)},delLabel:"Remove"});
+}
+function dlgAssign(aid){
+  const s=clone(curSvc());s.assignments=s.assignments||[];const isNew=!aid;
+  const a=isNew?{id:uid(),role:ROLES[0],personId:"",status:"pending",note:""}:s.assignments.find(x=>x.id===aid);
+  const ppl=[["","Nobody yet"],...[...S.people].sort(byName).map(p=>[p.id,p.name+((p.roles||[]).length?" ("+p.roles.join(", ")+")":"")])];
+  openDialog({title:isNew?"Add a role":"Edit "+a.role,
+    body:`${fSel("role","Role",ROLES.includes(a.role)?ROLES:[a.role,...ROLES],a.role)}
+    ${fSel("personId","Person",ppl,a.personId)}
+    ${S.people.length?"":`<p class="hint">Add people on the Team tab first.</p>`}
+    ${fSel("status","Status",Object.entries(STATUS),a.status||"pending")}
+    ${fIn("note","Note",a.note,'placeholder="Arriving at soundcheck, etc."')}`,
+    onSave:async fd=>{a.role=String(fd.get("role"));a.personId=String(fd.get("personId")||"");a.status=String(fd.get("status"));a.note=String(fd.get("note")||"").trim();if(isNew)s.assignments.push(a);return saveSvc(s)},
+    onDelete:isNew?null:async()=>{s.assignments=s.assignments.filter(x=>x.id!==aid);return saveSvc(s)},delLabel:"Remove role"});
+}
+function dlgSong(id){
+  const isNew=!id;const so=isNew?{title:"",artist:"",defaultKey:"",bpm:"",link:"",notes:""}:clone(songById(id));const sid=id||uid();
+  openDialog({title:isNew?"Add a song":"Edit song",
+    body:`${fIn("title","Title",so.title,"required")}${fIn("artist","Artist / writer",so.artist)}
+    <div class="frow">${fSel("defaultKey","Usual key",keyOpts,so.defaultKey)}${fIn("bpm","BPM",so.bpm,'type="number" min="0" inputmode="numeric"')}</div>
+    ${fIn("link","Chart or reference link",so.link,'type="url" placeholder="https://"')}
+    ${fArea("notes","Notes",so.notes)}`,
+    onSave:async fd=>{const d={};["title","artist","defaultKey","bpm","link","notes"].forEach(k=>d[k]=String(fd.get(k)||"").trim());if(d.link&&!/^https?:\/\//i.test(d.link))d.link="https://"+d.link;return write("songs",sid,d)},
+    onDelete:isNew?null:async()=>remove("songs",sid),delLabel:"Delete song"});
+}
+function dlgPerson(id){
+  const isNew=!id;const p=isNew?{name:"",church:"",phone:"",email:"",roles:[],notes:""}:clone(personById(id));const pid=id||uid();
+  openDialog({title:isNew?"Add a person":"Edit "+p.name,
+    body:`${fIn("name","Name",p.name,"required")}${fIn("church","Home church",p.church)}
+    <div class="frow">${fIn("phone","Phone",p.phone,'type="tel"')}${fIn("email","Email",p.email,'type="email"')}</div>
+    <fieldset><legend>Can serve as</legend><div class="checks">${ROLES.map((r,i)=>`<label><input type="checkbox" id="role_${i}" name="roles" value="${esc(r)}"${(p.roles||[]).includes(r)?" checked":""}>${esc(r)}</label>`).join("")}</div></fieldset>
+    ${fArea("notes","Notes",p.notes)}`,
+    onSave:async fd=>{const d={};["name","church","phone","email","notes"].forEach(k=>d[k]=String(fd.get(k)||"").trim());d.roles=fd.getAll("roles").map(String);return write("people",pid,d)},
+    onDelete:isNew?null:async()=>remove("people",pid),delLabel:"Remove from team"});
+}
+
+/* ---------- actions ---------- */
+const WRITE_ACTS=new Set(["svc-new","svc-edit","run-add","run-edit","run-mv","run-template","set-add","set-edit","set-mv","as-add","as-edit","as-cycle","as-std","song-add","song-edit","person-add","person-edit"]);
+document.addEventListener("click",async ev=>{
+  const tab=ev.target.closest("nav button[data-tab]");
+  if(tab){S.tab=tab.dataset.tab;S.open=null;S.q="";render();window.scrollTo(0,0);return}
+  const el=ev.target.closest("[data-act]");if(!el||el.closest("dialog"))return;
+  const act=el.dataset.act,i=el.dataset.i!=null?+el.dataset.i:null,id=el.dataset.id;
+  if(el.tagName==="A")return;
+  if(act==="open"){S.open=id;render();window.scrollTo(0,0);return}
+  if(act==="back"){S.open=null;render();return}
+  if(act==="copy"){ev.stopPropagation();try{await navigator.clipboard.writeText(el.dataset.v);toast("Copied")}catch(e){const r=document.createRange();r.selectNodeContents(el);const sel=getSelection();sel.removeAllRanges();sel.addRange(r);toast("Selected. Press copy to copy it.")}return}
+  if(WRITE_ACTS.has(act)&&!S.canWrite)return;
+  ev.stopPropagation();
+  if(act==="svc-new"){S._newDate=el.dataset.date||null;dlgService(null);S._newDate=null}
+  else if(act==="svc-edit")dlgService(curSvc());
+  else if(act==="run-add")dlgRun(null);
+  else if(act==="run-edit")dlgRun(i);
+  else if(act==="set-add")dlgSet(null);
+  else if(act==="set-edit")dlgSet(i);
+  else if(act==="as-add")dlgAssign(null);
+  else if(act==="as-edit")dlgAssign(id);
+  else if(act==="song-add")dlgSong(null);
+  else if(act==="song-edit")dlgSong(id);
+  else if(act==="person-add")dlgPerson(null);
+  else if(act==="person-edit")dlgPerson(id);
+  else if(act==="run-mv"||act==="set-mv"){
+    const s=clone(curSvc()),arr=act==="run-mv"?s.runSheet:s.setlist,j=i+(+el.dataset.d);
+    if(j<0||j>=arr.length)return;[arr[i],arr[j]]=[arr[j],arr[i]];await saveSvc(s);
+  }else if(act==="run-template"){
+    const s=clone(curSvc());
+    s.runSheet=[["Pre-service music",10],["Welcome",5],["Worship set",30],["Message",20],["Response and prayer",15],["Closing song and send-off",5]].map(([t,m])=>({id:uid(),title:t,minutes:m,owner:"",notes:""}));
+    if(await saveSvc(s))toast("Outline added. Tap any item to adjust it.");
+  }else if(act==="as-std"){
+    const s=clone(curSvc());
+    s.assignments=["Worship leader","Vocals","Keys","Acoustic guitar","Electric guitar","Bass","Drums","Sound","Lyrics / slides","Livestream"].map(r=>({id:uid(),role:r,personId:"",status:"pending",note:""}));
+    await saveSvc(s);
+  }else if(act==="as-cycle"){
+    const s=clone(curSvc()),a=(s.assignments||[]).find(x=>x.id===id);if(!a)return;
+    const order=["pending","accepted","declined"];a.status=order[(order.indexOf(a.status||"pending")+1)%3];
+    if(await saveSvc(s))toast(STATUS[a.status]);
+  }
+});
+document.addEventListener("input",e=>{if(e.target.id==="q"){S.q=e.target.value;S._focusQ=true;render()}});
+
+/* ---------- boot ---------- */
+render();
+let lastSig="";
+async function pull(){
+  if(dlg.open)return;
+  try{
+    const d=await api("GET","/all");
+    const sig=JSON.stringify(d.records);
+    S.noDb=false;["services","songs","people"].forEach(c=>S.loaded[c]=true);
+    if(sig!==lastSig){lastSig=sig;["services","songs","people"].forEach(c=>S[c]=(d.records[c]||[]));
+      const q=document.activeElement&&document.activeElement.id==="q";if(q)S._focusQ=true;render()}
+  }catch(e){if(e.message!=="locked"&&!S.loaded.services){S.noDb=true;render()}}
+}
+pull();
+setInterval(()=>{if(!document.hidden)pull()},15000);
+document.addEventListener("visibilitychange",()=>{if(!document.hidden)pull()});
+dlg.addEventListener("close",pull);
+document.getElementById("lockBtn").addEventListener("click",async()=>{try{await fetch(API+"/logout",{method:"POST"})}catch(e){}location.reload()});
+</script>
+</body>
+</html>
