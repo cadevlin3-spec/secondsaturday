@@ -184,7 +184,7 @@ dialog{border:1px solid var(--line);border-radius:18px;padding:0;background:var(
 .sheet .up.drag{border-color:var(--accent);background:#fff6ef}
 .sheet .up .prog{font-weight:600;color:var(--ink)}
 .filechip{display:inline-block;margin-left:6px;font:700 11px var(--f-body);letter-spacing:.04em;color:var(--accent);background:#fff1e6;border-radius:999px;padding:1px 7px;vertical-align:1px}
-.sheet .row{display:flex;gap:8px;width:100%;justify-content:center;margin-top:4px}
+.sheet .row{display:flex;flex-wrap:wrap;gap:8px;width:100%;justify-content:center;margin-top:4px}
 dialog::backdrop{background:rgba(27,23,20,.35)}
 dialog form{display:grid;gap:0}
 .dtitle{padding:16px 18px 6px}
@@ -350,7 +350,7 @@ function panelSet(s){
   h+=`<ol class="rows set">`+list.map((e,i)=>{const so=songById(e.songId)||{title:e.title||"Removed song"};return`<li class="click" data-act="song-sheet" data-i="${i}">
     <span class="n">${i+1}</span>
     <div class="what"><b>${esc(so.title)}${fileChip(so)}</b><span>${esc([so.artist,so.bpm?so.bpm+" bpm":"",e.notes].filter(Boolean).join(" · "))}</span></div>
-    <div class="mv">${(e.key||so.defaultKey)?`<span class="key">${esc(e.key||so.defaultKey)}</span>`:""}<span class="w"><button type="button" aria-label="Move up" data-act="set-mv" data-i="${i}" data-d="-1">↑</button><button type="button" aria-label="Move down" data-act="set-mv" data-i="${i}" data-d="1">↓</button></span></div></li>`}).join("")+`</ol></section>`;
+    <div class="mv">${e.key?`<span class="key">${esc(e.key)}</span>`:""}<span class="w"><button type="button" aria-label="Move up" data-act="set-mv" data-i="${i}" data-d="-1">↑</button><button type="button" aria-label="Move down" data-act="set-mv" data-i="${i}" data-d="1">↓</button></span></div></li>`}).join("")+`</ol></section>`;
   return h;
 }
 function panelSched(s){
@@ -451,8 +451,8 @@ function dlgSet(i){
   openDialog({title:isNew?"Add to setlist":"Edit setlist song",
     body:`${fSel("songId","Song from the library",opts,e.songId)}
     ${isNew?fIn("newTitle","Or add a new song by title","",'placeholder="New song title"'):""}
-    <div class="frow">${fSel("key","Key for this night",keyOpts,e.key)}</div>
-    <p class="hint">Leave the key blank to use the song's usual key.</p>
+    <div class="frow">${fSel("key","Key for this night",[["","No key yet"],...KEYS],e.key)}</div>
+    <p class="hint">Pick “No key yet” to take the key off. The team sees only the key set here.</p>
     ${fIn("notes","Notes",e.notes,'placeholder="Capo 2, extended bridge, etc."')}`,
     onSave:async fd=>{
       let sid=String(fd.get("songId")||"");const nt=String(fd.get("newTitle")||"").trim();
@@ -479,7 +479,7 @@ function dlgSong(id){
   const isNew=!id;const so=isNew?{title:"",artist:"",defaultKey:"",bpm:"",link:"",chart:"",notes:""}:clone(songById(id));const sid=id||uid();
   openDialog({title:isNew?"Add a song":"Edit song",
     body:`${fIn("title","Title",so.title,"required")}${fIn("artist","Artist / writer",so.artist)}
-    <div class="frow">${fSel("defaultKey","Usual key",keyOpts,so.defaultKey)}${fIn("bpm","BPM",so.bpm,'type="number" min="0" inputmode="numeric"')}</div>
+    <div class="frow">${fSel("defaultKey","Usual key (optional)",[["","None"],...KEYS],so.defaultKey)}${fIn("bpm","BPM",so.bpm,'type="number" min="0" inputmode="numeric"')}</div>
     ${fIn("link","YouTube link",so.link,'type="url" placeholder="https://"')}
     ${fIn("chart","Chord chart link",so.chart,'type="url" placeholder="https://"')}
     ${fArea("notes","Notes",so.notes)}`,
@@ -546,19 +546,21 @@ async function removeFile(songId,idx,fid){
 function openSheet(songId,idx){
   const so=songById(songId);if(!so)return;
   const e=idx!=null&&S.open?((S.services.find(x=>x.id===S.open)||{}).setlist||[])[idx]:null;
-  const key=(e&&e.key)||so.defaultKey||"";
+  const fromSet=idx!=null&&!!S.open;const key=fromSet?((e&&e.key)||""):(so.defaultKey||"");
   const notes=[e&&e.notes,so.notes].filter(Boolean).join("\n");
   const opt=(href,icon,label,sub)=>href?`<a class="opt" href="${esc(href)}" target="_blank" rel="noopener">${icon}<span>${label}<small>${sub}</small></span></a>`:`<div class="opt off">${icon}<span>${label}<small>Not added yet</small></span></div>`;
   sheetBody.innerHTML=`<div class="sh">
     <h2 id="shTitle">${esc(so.title)}</h2>
     ${so.artist?`<div class="sub">${esc(so.artist)}</div>`:""}
-    ${key?`<span class="bigkey">Key of ${esc(key)}</span>`:""}
+    ${key?`<span class="bigkey">${fromSet?"Key of":"Usual key:"} ${esc(key)}</span>`:(fromSet?`<span class="sub">Key not picked yet</span>`:"")}
     <div class="opts">${opt(so.chart,ICON_CHART,"Chord chart",key?"Use the key of "+esc(key):"Opens the chart")}${opt(so.link,ICON_VIDEO,"Video","Watch on YouTube")}</div>
     ${notes?`<div class="note">${esc(notes)}</div>`:""}
     ${filesHtml(so)}
-    <div class="row">${S.canWrite?`<button type="button" class="btn" id="shEdit">Edit</button>`:""}<button type="button" class="btn primary" id="shClose">Close</button></div>
+    <div class="row">${S.canWrite&&fromSet&&key?`<button type="button" class="btn" id="shClear">Remove key</button>`:""}${S.canWrite?`<button type="button" class="btn" id="shEdit">Edit</button>`:""}<button type="button" class="btn primary" id="shClose">Close</button></div>
   </div>`;
   sheetBody.querySelector("#shClose").onclick=()=>sheet.close();
+  const clr=sheetBody.querySelector("#shClear");
+  if(clr)clr.onclick=async()=>{const sv=clone(S.services.find(x=>x.id===S.open));if(!sv||!sv.setlist[idx])return;sv.setlist[idx].key="";delete sv.id;if(await write("services",S.open,sv)){toast("Key removed");openSheet(songId,idx)}};
   const ed=sheetBody.querySelector("#shEdit");
   if(ed)ed.onclick=()=>{sheet.close();if(idx!=null&&S.open)dlgSet(idx);else dlgSong(songId)};
   const inp=sheetBody.querySelector("#upInput"),zone=sheetBody.querySelector("#upZone");
